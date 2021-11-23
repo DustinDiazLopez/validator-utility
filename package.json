@@ -1,0 +1,31 @@
+{
+  "name": "validator-utility",
+  "version": "1.0.0",
+  "description": "Extend validator functionality",
+  "main": "validatorUtility.js",
+  "dependencies": {
+    "validator": "^13.7.0"
+  },
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DustinDiazLopez/validator-utility.git"
+  },
+  "keywords": [
+    "validator"
+  ],
+  "author": "DustinDiazLopez",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/DustinDiazLopez/validator-utility/issues"
+  },
+  "homepage": "https://github.com/DustinDiazLopez/validator-utility#readme",
+  "devDependencies": {
+    "eslint": "^8.3.0",
+    "eslint-config-airbnb-base": "^15.0.0",
+    "eslint-plugin-import": "^2.25.3",
+    "jest": "^27.3.1"
+  }
+}
