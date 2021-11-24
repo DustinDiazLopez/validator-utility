@@ -22,17 +22,14 @@ const __validator = require('validator');
  *  - add max depth for arrays
  */
 function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
-  _validator.escape = function escape(obj, maxDeepDepth = Infinity, maxArrayDepth = Infinity) {
-    let wasJsonString = false;
-    if (typeof obj === 'string') {
-      try {
-        const json = JSON.parse(obj); // json-str to obj
-        if (json && typeof json === 'object') {
-          obj = json;
-          wasJsonString = true;
-        }
-        // eslint-disable-next-line no-empty
-      } catch (ignored) { }
+  _validator.escape = function escape(
+    obj,
+    maxDeepDepth = Infinity,
+    maxArrayDepth = Infinity,
+    supressWarnings = false,
+  ) {
+    function _isNumber(_obj) {
+      return typeof _obj === 'number';
     }
 
     function _isString(_obj) {
@@ -43,6 +40,26 @@ function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
       return Array.isArray(_obj) || _obj instanceof Array;
     }
 
+    if (!_isNumber(maxDeepDepth) || maxArrayDepth <= 0) {
+      maxDeepDepth = Infinity;
+    }
+
+    if (!_isNumber(maxArrayDepth) || maxArrayDepth <= 0) {
+      maxDeepDepth = Infinity;
+    }
+
+    let wasJsonString = false;
+    if (_isString(obj)) {
+      try {
+        const json = JSON.parse(obj); // json-str to obj
+        if (json && typeof json === 'object') {
+          obj = json;
+          wasJsonString = true;
+        }
+        // eslint-disable-next-line no-empty
+      } catch (ignored) { }
+    }
+
     function _safeEscape(_str, escapeFunction, unescapeFunction) {
       // string value may have already been escaped, which may cause other literals like
       // `<` to be re-escaped, for example, `<` turns into `&lt;` which if re-escaped
@@ -50,7 +67,7 @@ function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
       return escapeFunction(unescapeFunction(_str));
     }
 
-    function _sanitizeObject(_obj, escapeFunction, unescapeFunction) {
+    function _sanitizeObject(_obj, escapeFunction, unescapeFunction, depth = 0) {
       if (_obj instanceof Date) {
         // will break functionality of objects (use only for sending JSON responses)
         return _obj.toISOString();
@@ -65,26 +82,34 @@ function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
 
       if (_isArray(_obj)) {
         const arr = [];
-        _obj.forEach((_, i) => {
-          arr[i] = _sanitizeObject(_obj[i], escapeFunction, unescapeFunction);
-        });
+        if (_obj.length < maxArrayDepth) {
+          _obj.forEach((_, i) => {
+            arr[i] = _sanitizeObject(_obj[i], escapeFunction, unescapeFunction, depth + 1);
+          });
+        } else if (!supressWarnings) {
+          console.warn('WARNING (validator-utility): Exceeded max array depth (array).');
+        }
         return arr;
       }
 
       const sanitized = {};
-      for (const i in _obj) {
-        if (i === '_id' && typeof _obj[i] === 'object') {
-          const serialId = _obj[i].toString();
-          sanitized[i] = _sanitizeObject(serialId, escapeFunction, unescapeFunction);
-        } else {
-          sanitized[i] = _sanitizeObject(_obj[i], escapeFunction, unescapeFunction);
+      if (depth < maxDeepDepth) {
+        for (const i in _obj) {
+          if (i === '_id' && typeof _obj[i] === 'object') {
+            const serialId = _obj[i].toString();
+            sanitized[i] = _sanitizeObject(serialId, escapeFunction, unescapeFunction, depth + 1);
+          } else {
+            sanitized[i] = _sanitizeObject(_obj[i], escapeFunction, unescapeFunction, depth + 1);
+          }
         }
+      } else if (!supressWarnings) {
+        console.warn('WARNING (validator-utility): Exceeded max deep depth (object).');
       }
 
       return sanitized;
     }
 
-    const result = _sanitizeObject(obj, _oldValidatorEscapeRef, _validator.unescape);
+    const result = _sanitizeObject(obj, _oldValidatorEscapeRef, _validator.unescape, 1);
     return wasJsonString ? JSON.stringify(result) : result;
   };
 }
@@ -92,7 +117,33 @@ function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
 function init() {
   __validator.escapeString = __validator.escape;
   modifyValidatorEscape(__validator, __validator.escapeString);
-  return __validator;
+  const { escape } = __validator;
+  delete __validator.escape;
+  const result = {
+    ...__validator,
+    /**
+     * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object
+     * @param {any} obj the object/string to sanitize
+     * @param {number} maxDeepDepth maximum allowed recursion depth.
+     * @param {number} maxArrayDepth maximing allowed array size (depth).
+     * @param {boolean} supressWarnings wether to `console.warn` when an array/object exceeded
+     *                                  the max depth.
+     * @returns the sanitized object/string. If the input is not a string or an object 
+     *          it'll be returned.
+     */
+    escape: (
+      obj,
+      maxDeepDepth = Infinity,
+      maxArrayDepth = Infinity,
+      supressWarnings = false,
+    ) => escape(
+      obj,
+      maxDeepDepth,
+      maxArrayDepth,
+      supressWarnings,
+    ),
+  };
+  return result;
 }
 
 exports.init = init;
