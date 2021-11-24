@@ -64,3 +64,5 @@ app.post('/ping', (req, res) => {
  */
 validator.escape(obj, maxDeepDepth?: number, maxArrayDepth?: number, supressWarnings?: boolean);
 ```
+
+For documentation on other `validator` methods refer to the [validator](https://www.npmjs.com/package/validator) package README.
