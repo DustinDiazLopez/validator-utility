@@ -13,9 +13,6 @@
     "type": "git",
     "url": "git+https://github.com/DustinDiazLopez/validator-utility.git"
   },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
   "keywords": [
     "validator",
     "sanitze",
