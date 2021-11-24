@@ -14,7 +14,8 @@
     "url": "git+https://github.com/DustinDiazLopez/validator-utility.git"
   },
   "keywords": [
-    "validator"
+    "validator", "sanitze", "sanitize object", "sanitize array", "sanitize string",
+    "validate", "sanitize unknown structure", "clean input"
   ],
   "author": "DustinDiazLopez",
   "license": "MIT",
