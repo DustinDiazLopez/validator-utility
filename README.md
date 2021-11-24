@@ -48,3 +48,19 @@ app.post('/ping', (req, res) => {
   return res.send(sanitizedResponse);
 });
 ```
+
+## JSDoc
+
+```ts
+/**
+ * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object
+ * @param {any} obj the object/string to sanitize. Required. 
+ * @param {number} maxDeepDepth maximum allowed recursion depth. `Infinity` by default.
+ * @param {number} maxArrayDepth maximing allowed array size (depth). `Infinity` by default.
+ * @param {boolean} supressWarnings wether to `console.warn` when an array/object exceeded
+ *                                  the max depth. `false` by default.
+ * @returns the sanitized object/string. If the input is not a string or an object
+ *          it'll be returned.
+ */
+validator.escape(obj, maxDeepDepth?: number, maxArrayDepth?: number, supressWarnings?: boolean);
+```

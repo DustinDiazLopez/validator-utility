@@ -98,7 +98,7 @@ test('test normal', () => {
   expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(expected));
 });
 
-test('test bad string', () => {
+test('test bad string (json-str)', () => {
   const date = new Date();
   const obj = JSON.stringify({
     people: [{

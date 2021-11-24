@@ -1,5 +1,3 @@
-const __validator = require('validator');
-
 /**
  * <strong>NOTE: ONLY USE THIS FUNCTION FOR SENDING JSON OBJECTS (i.e.,
  * use only for sending JSON responses)</strong>
@@ -115,19 +113,21 @@ function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
 }
 
 function init() {
-  __validator.escapeString = __validator.escape;
-  modifyValidatorEscape(__validator, __validator.escapeString);
-  const ref = __validator.escape;
-  delete __validator.escape;
+  // eslint-disable-next-line global-require
+  const validatorPackage = require('validator');
+  validatorPackage.escapeString = validatorPackage.escape;
+  modifyValidatorEscape(validatorPackage, validatorPackage.escapeString);
+  const ref = validatorPackage.escape;
+  delete validatorPackage.escape;
   const result = {
-    ...__validator,
+    ...validatorPackage,
     /**
      * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object
-     * @param {any} obj the object/string to sanitize
-     * @param {number} maxDeepDepth maximum allowed recursion depth.
-     * @param {number} maxArrayDepth maximing allowed array size (depth).
+     * @param {any} obj the object/string to sanitize. Required.
+     * @param {number} maxDeepDepth maximum allowed recursion depth. `Infinity` by default.
+     * @param {number} maxArrayDepth maximing allowed array size (depth). `Infinity` by default.
      * @param {boolean} supressWarnings wether to `console.warn` when an array/object exceeded
-     *                                  the max depth.
+     *                                  the max depth. `false` by default.
      * @returns the sanitized object/string. If the input is not a string or an object
      *          it'll be returned.
      */
