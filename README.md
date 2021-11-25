@@ -1,5 +1,7 @@
 # Validator Utility
 
+[![CI](https://circleci.com/gh/DustinDiazLopez/validator-utility.svg?style=svg)](https://circleci.com/gh/DustinDiazLopez/validator-utility)
+
 This package expands the functionality of the `escape` method in the [validator](https://www.npmjs.com/package/validator) package.
 
 It adds support for escaping string values in a JSON object, i.e., it'll escape all string values.
