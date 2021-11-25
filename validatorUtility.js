@@ -15,9 +15,6 @@
  * const _validatorEscape = validator.escape;
  * require('path/to/sanitize.js').modifyValidatorEscape(validator, _validatorEscape);
  *
- * TODO:
- *  - add max depth for recursion
- *  - add max depth for arrays
  */
 function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
   _validator.escape = (
@@ -129,7 +126,8 @@ function init() {
      * @param {boolean} supressWarnings wether to `console.warn` when an array/object exceeded
      *                                  the max depth. `false` by default.
      * @returns the sanitized object/string. If the input is not a string or an object
-     *          it'll be returned.
+     *          it'll be returned. If a JSON-String is inputed it'll parse it and return it back
+     *          as a JSON-String (with the appropriate values sanitized).
      */
     escape: (
       obj,
@@ -147,4 +145,3 @@ function init() {
 }
 
 exports.init = init;
-exports.modifyValidatorEscape = modifyValidatorEscape;

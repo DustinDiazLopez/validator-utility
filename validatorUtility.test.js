@@ -14,10 +14,13 @@ class _IdExample {
   }
 }
 
-test('test normal', () => {
-  const date = new Date();
-  const obj = {
-    _id: new _IdExample('example'),
+function unsafeCopy(o) {
+  return JSON.parse(JSON.stringify(o));
+}
+
+const testObject = (date = new Date(), jsonString = false) => {
+  const o = {
+    _id: jsonString ? 'example' : new _IdExample('example'),
     people: [{
       id: 1,
       first_name: 'Jeanette',
@@ -51,10 +54,17 @@ test('test normal', () => {
       {
         id: 1,
         message: "Hello, <script>alert('world');</script>",
-        date,
+        date: jsonString ? date.toISOString() : date,
       },
     ],
   };
+
+  return jsonString ? JSON.stringify(o) : o;
+};
+
+test('test normal', () => {
+  const date = new Date();
+  const obj = testObject(date);
   const sanitized = validator.escape(obj);
   const expected = {
     _id: 'example',
@@ -100,46 +110,11 @@ test('test normal', () => {
 
 test('test bad string (json-str)', () => {
   const date = new Date();
-  const obj = JSON.stringify({
-    people: [{
-      id: 1,
-      first_name: 'Jeanette',
-      last_name: 'Penddreth',
-      email: 'jpenddreth0@census.gov',
-      gender: 'Female',
-      ip_address: '26.58.193.2',
-    }, {
-      id: 2,
-      first_name: 'Giavani',
-      last_name: 'Frediani',
-      email: 'gfrediani1@senate.gov',
-      gender: 'Male',
-      ip_address: '229.179.4.212',
-    }, {
-      id: 3,
-      first_name: 'Noell',
-      last_name: 'Bea',
-      email: 'nbea2@imageshack.us',
-      gender: 'Female',
-      ip_address: '180.66.162.255',
-    }, {
-      id: 4,
-      first_name: 'Willard',
-      last_name: 'Valek',
-      email: 'wvalek3@vk.com',
-      gender: 'Male',
-      ip_address: '67.76.188.26',
-    }],
-    messages: [
-      {
-        id: 1,
-        message: "Hello, <script>alert('world');</script>",
-        date,
-      },
-    ],
-  });
+  const obj = testObject(date, true);
+  expect(typeof obj).toEqual('string');
   const sanitized = validator.escape(obj);
   const expected = JSON.stringify({
+    _id: 'example',
     people: [{
       id: 1,
       first_name: 'Jeanette',
@@ -204,80 +179,17 @@ test('test boolean', () => {
 
 test('test function', () => {
   const obj = (a, b) => a + b;
-  const sanitized = validator.escape(obj);
-  expect(sanitized(1, 1)).toEqual(2);
+  const sanitizedFunction = validator.escape(obj);
+  expect(sanitizedFunction(1, 1)).toEqual(2);
 });
 
 test('test max array depth', () => {
   const date = new Date();
-  const obj = {
-    _id: new _IdExample('example'),
-    people: [{
-      id: 1,
-      first_name: 'Jeanette',
-      last_name: 'Penddreth',
-      email: 'jpenddreth0@census.gov',
-      gender: 'Female',
-      ip_address: '26.58.193.2',
-    }, {
-      id: 2,
-      first_name: 'Giavani',
-      last_name: 'Frediani',
-      email: 'gfrediani1@senate.gov',
-      gender: 'Male',
-      ip_address: '229.179.4.212',
-    }, {
-      id: 3,
-      first_name: 'Noell',
-      last_name: 'Bea',
-      email: 'nbea2@imageshack.us',
-      gender: 'Female',
-      ip_address: '180.66.162.255',
-    }, {
-      id: 4,
-      first_name: 'Willard',
-      last_name: 'Valek',
-      email: 'wvalek3@vk.com',
-      gender: 'Male',
-      ip_address: '67.76.188.26',
-    },
-    {
-      id: 5,
-      first_name: 'Jeanette',
-      last_name: 'Penddreth',
-      email: 'jpenddreth0@census.gov',
-      gender: 'Female',
-      ip_address: '26.58.193.2',
-    }, {
-      id: 6,
-      first_name: 'Giavani',
-      last_name: 'Frediani',
-      email: 'gfrediani1@senate.gov',
-      gender: 'Male',
-      ip_address: '229.179.4.212',
-    }, {
-      id: 7,
-      first_name: 'Noell',
-      last_name: 'Bea',
-      email: 'nbea2@imageshack.us',
-      gender: 'Female',
-      ip_address: '180.66.162.255',
-    }, {
-      id: 8,
-      first_name: 'Willard',
-      last_name: 'Valek',
-      email: 'wvalek3@vk.com',
-      gender: 'Male',
-      ip_address: '67.76.188.26',
-    }],
-    messages: [
-      {
-        id: 1,
-        message: "Hello, <script>alert('world');</script>",
-        date,
-      },
-    ],
-  };
+  const obj = testObject(date);
+  for (let i = 0; i < 50; i++) {
+    obj.people.push(obj.people[0]);
+  }
+
   const sanitized = validator.escape(obj, -1, 5, true);
   const expected = {
     _id: 'example',
@@ -295,78 +207,7 @@ test('test max array depth', () => {
 
 test('test max deep depth', () => {
   const date = new Date();
-  const obj = {
-    _id: new _IdExample('example'),
-    people: [{
-      id: 1,
-      first_name: 'Jeanette',
-      last_name: 'Penddreth',
-      email: 'jpenddreth0@census.gov',
-      gender: 'Female',
-      ip_address: '26.58.193.2',
-    }, {
-      id: 2,
-      first_name: 'Giavani',
-      last_name: 'Frediani',
-      email: 'gfrediani1@senate.gov',
-      gender: 'Male',
-      ip_address: '229.179.4.212',
-    }, {
-      id: 3,
-      first_name: 'Noell',
-      last_name: 'Bea',
-      email: 'nbea2@imageshack.us',
-      gender: 'Female',
-      ip_address: '180.66.162.255',
-    }, {
-      id: 4,
-      first_name: 'Willard',
-      last_name: 'Valek',
-      email: 'wvalek3@vk.com',
-      gender: 'Male',
-      ip_address: '67.76.188.26',
-    },
-    {
-      id: 5,
-      first_name: 'Jeanette',
-      last_name: 'Penddreth',
-      email: 'jpenddreth0@census.gov',
-      gender: 'Female',
-      ip_address: '26.58.193.2',
-    }, {
-      id: 6,
-      first_name: 'Giavani',
-      last_name: 'Frediani',
-      email: 'gfrediani1@senate.gov',
-      gender: 'Male',
-      ip_address: '229.179.4.212',
-    }, {
-      id: 7,
-      first_name: 'Noell',
-      last_name: 'Bea',
-      email: 'nbea2@imageshack.us',
-      gender: 'Female',
-      ip_address: '180.66.162.255',
-    }, {
-      id: 8,
-      first_name: 'Willard',
-      last_name: 'Valek',
-      email: 'wvalek3@vk.com',
-      gender: 'Male',
-      ip_address: '67.76.188.26',
-    }],
-    messages: [
-      {
-        id: 1,
-        message: "Hello, <script>alert('world');</script>",
-        date,
-      },
-    ],
-  };
-
-  function unsafeCopy(o) {
-    return JSON.parse(JSON.stringify(o));
-  }
+  const obj = testObject(date);
 
   let ref = obj.people[0];
   for (let i = 0; i < 50; i++) {
@@ -374,6 +215,7 @@ test('test max deep depth', () => {
     ref.people.push(unsafeCopy(obj.people[0]));
     ref = ref.people[0];
   }
+
   const MAX_DEEP_DEPTH = 5;
   const sanitized = validator.escape(obj, MAX_DEEP_DEPTH, 50, true);
 
@@ -392,45 +234,7 @@ test('test max deep depth', () => {
 
 test('test normal 0 max depths', () => {
   const date = new Date();
-  const obj = {
-    _id: new _IdExample('example'),
-    people: [{
-      id: 1,
-      first_name: 'Jeanette',
-      last_name: 'Penddreth',
-      email: 'jpenddreth0@census.gov',
-      gender: 'Female',
-      ip_address: '26.58.193.2',
-    }, {
-      id: 2,
-      first_name: 'Giavani',
-      last_name: 'Frediani',
-      email: 'gfrediani1@senate.gov',
-      gender: 'Male',
-      ip_address: '229.179.4.212',
-    }, {
-      id: 3,
-      first_name: 'Noell',
-      last_name: 'Bea',
-      email: 'nbea2@imageshack.us',
-      gender: 'Female',
-      ip_address: '180.66.162.255',
-    }, {
-      id: 4,
-      first_name: 'Willard',
-      last_name: 'Valek',
-      email: 'wvalek3@vk.com',
-      gender: 'Male',
-      ip_address: '67.76.188.26',
-    }],
-    messages: [
-      {
-        id: 1,
-        message: "Hello, <script>alert('world');</script>",
-        date,
-      },
-    ],
-  };
+  const obj = testObject(date);
   const sanitized = validator.escape(obj, 0, 0);
   const expected = {
     _id: 'example',

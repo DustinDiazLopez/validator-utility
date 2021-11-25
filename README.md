@@ -49,6 +49,10 @@ app.post('/ping', (req, res) => {
 });
 ```
 
+> The function supports specifying a max deep depth and a max array depth/size refer to the JSDoc section.
+> **NOTE:** if these depths are exceeded (1) objects will be _truncated_ and (2) arrays _will not_ be processed (i.e., an empty array will be returned).
+
+
 ## JSDoc
 
 ```ts
@@ -59,8 +63,9 @@ app.post('/ping', (req, res) => {
  * @param {number} maxArrayDepth maximing allowed array size (depth). `Infinity` by default.
  * @param {boolean} supressWarnings wether to `console.warn` when an array/object exceeded
  *                                  the max depth. `false` by default.
- * @returns the sanitized object/string. If the input is not a string or an object
- *          it'll be returned.
+  * @returns the sanitized object/string. If the input is not a string or an object
+  *          it'll be returned. If a JSON-String is inputed it'll parse it and return it back
+  *          as a JSON-String (with the appropriate values sanitized).
  */
 validator.escape(obj, maxDeepDepth?: number, maxArrayDepth?: number, supressWarnings?: boolean);
 ```
