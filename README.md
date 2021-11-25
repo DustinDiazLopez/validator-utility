@@ -52,7 +52,6 @@ app.post('/ping', (req, res) => {
 > The function supports specifying a max deep depth and a max array depth/size refer to the JSDoc section.
 > **NOTE:** if these depths are exceeded (1) objects will be _truncated_ and (2) arrays _will not_ be processed (i.e., an empty array will be returned).
 
-
 ## JSDoc
 
 ```ts
@@ -70,4 +69,4 @@ app.post('/ping', (req, res) => {
 validator.escape(obj, maxDeepDepth?: number, maxArrayDepth?: number, supressWarnings?: boolean);
 ```
 
-For documentation on other `validator` methods refer to the [validator](https://www.npmjs.com/package/validator) package README.
+For documentation on other `validator` methods refer to the [validator](https://www.npmjs.com/package/validator)'s documentation.
