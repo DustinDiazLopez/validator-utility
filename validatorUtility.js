@@ -3,6 +3,7 @@
  * use only for sending JSON responses)</strong>
  *
  * NOTE: for key `_id` if it's an object make sure it has a .toString() method
+ * NOTE: for `instanceof Date` the function `.toISOString()` will be called
  *
  * Modifies the validator.escape method to support escaping the string
  * values of objects.
@@ -13,10 +14,11 @@
  * @example
  * const validator = require('validator');
  * const _validatorEscape = validator.escape;
- * require('path/to/sanitize.js').modifyValidatorEscape(validator, _validatorEscape);
+ * modifyValidatorEscape(validator, _validatorEscape);
  *
  */
 function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
+  // reasign the old validator.escape to the new function
   _validator.escape = (
     obj,
     maxDeepDepth,
@@ -109,12 +111,16 @@ function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
   };
 }
 
+/**
+ * Modifies the `escape` function in the validator package and returns the validator object.
+ * @returns the validator object with the `escape` function modified.
+ */
 function init() {
   // eslint-disable-next-line global-require
   const validatorPackage = require('validator');
   validatorPackage.escapeString = validatorPackage.escape;
   modifyValidatorEscape(validatorPackage, validatorPackage.escapeString);
-  const ref = validatorPackage.escape;
+  const newValidatorEscapeRef = validatorPackage.escape;
   delete validatorPackage.escape;
   const result = {
     ...validatorPackage,
@@ -134,7 +140,7 @@ function init() {
       maxDeepDepth = Infinity,
       maxArrayDepth = Infinity,
       supressWarnings = false,
-    ) => ref(
+    ) => newValidatorEscapeRef(
       obj,
       maxDeepDepth,
       maxArrayDepth,
