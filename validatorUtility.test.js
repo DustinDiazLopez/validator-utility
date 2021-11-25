@@ -167,6 +167,7 @@ test('test number', () => {
   const obj = 43892;
   const sanitized = validator.escape(obj);
   const expected = 43892;
+  expect(typeof sanitized).toEqual('number');
   expect(sanitized).toEqual(expected);
 });
 
@@ -174,12 +175,14 @@ test('test boolean', () => {
   const obj = false;
   const sanitized = validator.escape(obj);
   const expected = false;
+  expect(typeof sanitized).toEqual('boolean');
   expect(sanitized).toEqual(expected);
 });
 
 test('test function', () => {
   const obj = (a, b) => a + b;
   const sanitizedFunction = validator.escape(obj);
+  expect(typeof sanitizedFunction).toEqual('function');
   expect(sanitizedFunction(1, 1)).toEqual(2);
 });
 
