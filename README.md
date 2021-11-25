@@ -26,6 +26,10 @@ The value of `sanitizedExample` will be:
 }
 ```
 
+## Prerequisites
+
+- Node.js 13+
+
 ## Usage
 
 > **IMPORTANT**: only use for responses, i.e., this function may be destructive:
