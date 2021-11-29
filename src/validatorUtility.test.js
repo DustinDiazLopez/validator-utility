@@ -241,7 +241,7 @@ function suite(validator) {
     let count = 1;
     ref = sanitized.people[0];
     for (let i = 0; i < 50; i++) {
-      if (ref?.people && ref.people[0]) {
+      if (ref && ref.people && ref.people[0]) {
         count++;
         ref = ref.people[0];
       } else {
