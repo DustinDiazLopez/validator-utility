@@ -40,7 +40,8 @@ The value of `sanitizedExample` will be:
 Install and import package:
 
 ```js
-const validator = require('validator-utility').init();
+// .init() is deprecated (but still supported)
+const validator = require('validator-utility');
 
 // ...
 
