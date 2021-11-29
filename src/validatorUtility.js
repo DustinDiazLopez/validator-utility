@@ -17,7 +17,7 @@
  * modifyValidatorEscape(validator, _validatorEscape);
  *
  */
-function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
+function _modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
   // reasign the old validator.escape to the new function
   _validator.escape = (
     obj,
@@ -115,11 +115,11 @@ function modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
  * Modifies the `escape` function in the validator package and returns the validator object.
  * @returns the validator object with the `escape` function modified.
  */
-function init() {
+function _init() {
   // eslint-disable-next-line global-require
   const validatorPackage = require('validator');
   validatorPackage.escapeString = validatorPackage.escape;
-  modifyValidatorEscape(validatorPackage, validatorPackage.escapeString);
+  _modifyValidatorEscape(validatorPackage, validatorPackage.escapeString);
   const newValidatorEscapeRef = validatorPackage.escape;
   delete validatorPackage.escape;
   const result = {
@@ -150,4 +150,15 @@ function init() {
   return result;
 }
 
-exports.init = init;
+const __validatorUtilityPackage = _init();
+module.exports = {
+  ...__validatorUtilityPackage,
+  /**
+   * Modifies the `escape` function in the validator package and returns the validator object.
+   * @returns the validator object with the `escape` function modified.
+   * @deprecated use default
+   * @example const validator = require('validator-utility');
+   */
+  init: () => __validatorUtilityPackage,
+  modifyValidatorEscape: _modifyValidatorEscape,
+};
