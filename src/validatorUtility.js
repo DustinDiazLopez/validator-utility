@@ -1,3 +1,4 @@
+/* eslint-disable arrow-body-style */
 /**
  * <strong>NOTE: ONLY USE THIS FUNCTION FOR SENDING JSON OBJECTS (i.e.,
  * use only for sending JSON responses)</strong>
@@ -17,7 +18,11 @@
  * modifyValidatorEscape(validator, _validatorEscape);
  *
  */
-function _modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
+function _modifyValidatorEscape(
+  _validator,
+  _oldValidatorEscapeRef,
+  _safeEscapeFunction,
+) {
   // reasign the old validator.escape to the new function
   _validator.escape = (
     obj,
@@ -57,13 +62,6 @@ function _modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
       } catch (ignored) { }
     }
 
-    function _safeEscape(_str, escapeFunction, unescapeFunction) {
-      // string value may have already been escaped, which may cause other literals like
-      // `<` to be re-escaped, for example, `<` turns into `&lt;` which if re-escaped
-      // will turn into `&amp;lt`
-      return escapeFunction(unescapeFunction(_str));
-    }
-
     function _sanitizeObject(_obj, escapeFunction, unescapeFunction, depth = 0) {
       if (_obj instanceof Date) {
         // will break functionality of objects (use only for sending JSON responses)
@@ -72,7 +70,7 @@ function _modifyValidatorEscape(_validator, _oldValidatorEscapeRef) {
 
       if (_obj === null || _obj === undefined || typeof _obj !== 'object') {
         if (_isString(_obj)) {
-          return _safeEscape(_obj, escapeFunction, unescapeFunction);
+          return _safeEscapeFunction(_obj, escapeFunction, unescapeFunction);
         }
         return _obj;
       }
@@ -119,7 +117,20 @@ function _init() {
   // eslint-disable-next-line global-require
   const validatorPackage = require('validator');
   validatorPackage.escapeString = validatorPackage.escape;
-  _modifyValidatorEscape(validatorPackage, validatorPackage.escapeString);
+  _modifyValidatorEscape(
+    validatorPackage,
+    validatorPackage.escapeString,
+    (_str, escapeFunction, unescapeFunction) => {
+      if (escapeFunction && unescapeFunction) {
+      // string value may have already been escaped, which may cause other literals like
+      // `<` to be re-escaped, for example, `<` turns into `&lt;` which if re-escaped
+      // will turn into `&amp;lt`
+        return escapeFunction(unescapeFunction(_str));
+      }
+
+      return escapeFunction(_str);
+    },
+  );
   const newValidatorEscapeRef = validatorPackage.escape;
   delete validatorPackage.escape;
   const result = {
