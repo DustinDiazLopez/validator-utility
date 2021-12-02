@@ -2,36 +2,14 @@
 
 [![CI](https://circleci.com/gh/DustinDiazLopez/validator-utility.svg?style=svg)](https://circleci.com/gh/DustinDiazLopez/validator-utility)
 
-This package expands the functionality of the `escape` method in the [validator](https://www.npmjs.com/package/validator) package.
+This package expands upon the functionality of the `escape` method in the [validator](https://www.npmjs.com/package/validator) package. It adds support for escaping string values in a JSON object, i.e., it'll escape all string values.
 
-It adds support for escaping string values in a JSON object, i.e., it'll escape all string values.
-
-For example:
-
-```js
-const example = {
-  id: 1,
-  message: "Hello, <script>alert('world');</script>",
-};
-
-const sanitizedExample = validator.escape(example);
-```
-
-The value of `sanitizedExample` will be:
-
-```js
-{
-  id: 1,
-  message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;&#x2F;script&gt;',
-}
-```
-
-## Usage
-
-**IMPORTANT**: only use for responses, i.e., this function may be destructive:
+**IMPORTANT**: only use for responses, i.e., this function may be *destructive*:
 
 - If a key is named `_id` and its value is an `object` it'll try to do a `.toString()` on that value
-- If a value is an `instanceof Date` it'll call `.toISOString()` on that date value
+- If a value is an `instanceof Date` it'll call `.toISOString()` on that date value.
+
+## Usage
 
 ### Install and import package
 
