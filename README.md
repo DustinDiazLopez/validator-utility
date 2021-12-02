@@ -33,6 +33,9 @@ app.post('/ping', (req, res) => {
 
 ```js
 const validator = require('validator-utility');
+// NOTE: if the following depths are exceeded:
+//  (1) objects will be truncated, and 
+//  (2) arrays will not be processed (i.e., an empty array will be returned).
 validator.configure(
   100, // max deep depth
   100, // max array depth
@@ -55,7 +58,6 @@ app.post('/ping', (req, res) => {
 
 ## JSDoc
 
-> **IMPORTANT:** if these depths are exceeded (1) objects will be _truncated_ and (2) arrays _will not_ be processed (i.e., an empty array will be returned).
 ```ts
 /**
  * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object/array/string
