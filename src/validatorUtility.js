@@ -29,6 +29,7 @@ function _modifyValidatorEscape(
     maxDeepDepth,
     maxArrayDepth,
     supressWarnings,
+    blacklist,
   ) => {
     function _isNumber(_obj) {
       return typeof _obj === 'number';
@@ -70,7 +71,7 @@ function _modifyValidatorEscape(
 
       if (_obj === null || _obj === undefined || typeof _obj !== 'object') {
         if (_isString(_obj)) {
-          return _safeEscapeFunction(_obj, escapeFunction, unescapeFunction);
+          return _safeEscapeFunction(_obj, escapeFunction, unescapeFunction, blacklist);
         }
         return _obj;
       }
@@ -114,18 +115,54 @@ function _modifyValidatorEscape(
  * @returns the validator object with the `escape` function modified.
  */
 function _init() {
+  const _notValidStringOrArray = (value) => {
+    return !value && !(Array.isArray(value) || (typeof value === 'string' || value instanceof String));
+  };
+
   // eslint-disable-next-line global-require
   const validatorPackage = require('validator');
+  validatorPackage.escape = (str, blacklist = []) => {
+    if (_notValidStringOrArray(blacklist)) {
+      blacklist = [];
+    }
+
+    let result = str;
+    if (!blacklist.includes('&')) {
+      result = result.replace(/&/g, '&amp;');
+    }
+    if (!blacklist.includes('"')) {
+      result = result.replace(/"/g, '&quot;');
+    }
+    if (!blacklist.includes('\'')) {
+      result = result.replace(/'/g, '&#x27;');
+    }
+    if (!blacklist.includes('<')) {
+      result = result.replace(/</g, '&lt;');
+    }
+    if (!blacklist.includes('>')) {
+      result = result.replace(/>/g, '&gt;');
+    }
+    if (!blacklist.includes('/')) {
+      result = result.replace(/\//g, '&#x2F;');
+    }
+    if (!blacklist.includes('\\')) {
+      result = result.replace(/\\/g, '&#x5C;');
+    }
+    if (!blacklist.includes('`')) {
+      result = result.replace(/`/g, '&#96;');
+    }
+    return result;
+  };
   validatorPackage.escapeString = validatorPackage.escape;
   _modifyValidatorEscape(
     validatorPackage,
     validatorPackage.escapeString,
-    (_str, escapeFunction, unescapeFunction) => {
+    (_str, escapeFunction, unescapeFunction, blacklist) => {
       if (escapeFunction && unescapeFunction) {
       // string value may have already been escaped, which may cause other literals like
       // `<` to be re-escaped, for example, `<` turns into `&lt;` which if re-escaped
       // will turn into `&amp;lt`
-        return escapeFunction(unescapeFunction(_str));
+        return escapeFunction(unescapeFunction(_str), blacklist);
       }
 
       return escapeFunction(_str);
@@ -151,11 +188,13 @@ function _init() {
       maxDeepDepth = Infinity,
       maxArrayDepth = Infinity,
       supressWarnings = false,
+      blacklist = [],
     ) => newValidatorEscapeRef(
       obj,
       maxDeepDepth,
       maxArrayDepth,
       supressWarnings,
+      blacklist,
     ),
   };
   return result;

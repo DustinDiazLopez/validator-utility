@@ -180,6 +180,34 @@ function escapeTestSuite(validator) {
       expect(sanitized).toEqual(expected);
     });
 
+    test('test blacklist directly', () => {
+      // eslint-disable-next-line quotes
+      const obj = `Hello, <script>
+      // this comment should not be escaped
+      alert('world');
+      </script>`;
+      const sanitized = validator.escapeString(obj, ['/']);
+      const expected = `Hello, &lt;script&gt;
+      // this comment should not be escaped
+      alert(&#x27;world&#x27;);
+      &lt;/script&gt;`;
+      expect(sanitized).toEqual(expected);
+    });
+
+    test('test blacklist indirectly', () => {
+      // eslint-disable-next-line quotes
+      const obj = `Hello, <script>
+      // this comment should not be escaped
+      alert('world');
+      </script>`;
+      const sanitized = validator.escape(obj, Infinity, Infinity, true, ['/']);
+      const expected = `Hello, &lt;script&gt;
+      // this comment should not be escaped
+      alert(&#x27;world&#x27;);
+      &lt;/script&gt;`;
+      expect(sanitized).toEqual(expected);
+    });
+
     test('test number', () => {
       const obj = 43892;
       const sanitized = validator.escape(obj);
