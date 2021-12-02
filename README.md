@@ -33,7 +33,7 @@ The value of `sanitizedExample` will be:
 - If a key is named `_id` and its value is an `object` it'll try to do a `.toString()` on that value
 - If a value is an `instanceof Date` it'll call `.toISOString()` on that date value
 
-### Install and import package:
+### Install and import package
 
 ```js
 const validator = require('validator-utility');
@@ -51,7 +51,8 @@ app.post('/ping', (req, res) => {
 });
 ```
 
-### Use additional functionality:
+### Use additional functionality
+
 ```js
 const validator = require('validator-utility');
 validator.configure(
@@ -75,6 +76,7 @@ app.post('/ping', (req, res) => {
 ```
 
 ## JSDoc
+
 > **IMPORTANT:** if these depths are exceeded (1) objects will be _truncated_ and (2) arrays _will not_ be processed (i.e., an empty array will be returned).
 ```ts
 /**
