@@ -28,17 +28,14 @@ The value of `sanitizedExample` will be:
 
 ## Usage
 
-> **IMPORTANT**: only use for responses, i.e., this function may be destructive:
->
-> - If a key is named `_id` and it's an object it'll try to do a `.toString()` on that value
-> - If a value is an `instanceof Date` it'll call `.toISOString()` on that date value
->
-> Refer to the JSDoc section for additional functionality.
+**IMPORTANT**: only use for responses, i.e., this function may be destructive:
 
-Install and import package:
+- If a key is named `_id` and its value is an `object` it'll try to do a `.toString()` on that value
+- If a value is an `instanceof Date` it'll call `.toISOString()` on that date value
+
+### Install and import package:
 
 ```js
-// .init() is deprecated (but still supported)
 const validator = require('validator-utility');
 
 // ...
@@ -54,9 +51,8 @@ app.post('/ping', (req, res) => {
 });
 ```
 
-Use additional functionality:
+### Use additional functionality:
 ```js
-// .init() is deprecated (but still supported)
 const validator = require('validator-utility');
 validator.configure(
   100, // max deep depth
@@ -64,6 +60,7 @@ validator.configure(
   true, // supress warrning about truncated object or unprocessed arrays
   ['/'], // values to NOT escape
 );
+
 // ...
 
 app.post('/ping', (req, res) => {
