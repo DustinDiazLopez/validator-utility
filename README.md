@@ -11,7 +11,32 @@ This package expands upon the functionality of the `escape` method in the [valid
 
 ## Usage
 
-### Install and import package
+```js
+const validator = require('validator-utility');
+// NOTE: if the following depths are exceeded:
+//  (1) objects will be truncated, and 
+//  (2) arrays will not be processed (i.e., an empty array will be returned).
+validator.configure(
+  100, // max deep depth (can be Infinity)
+  100, // max array depth (can be Infinity)
+  true, // supress warrning about truncated object or unprocessed arrays
+  ['/'], // values to NOT escape (can be an empty array)
+);
+
+// ...
+
+app.post('/ping', (req, res) => {
+  const example = {
+    message: 'pong!',
+    input: req.body.comment, // input: 'HELLO/WORLD <sneak>'
+  };
+  // ...
+  const sanitizedResponse = validator.escape(example);
+  return res.send(sanitizedResponse); // { message: 'pong!', input: 'HELLO/WORLD &lt;sneak&gt;'}
+});
+```
+
+### No Configure
 
 ```js
 const validator = require('validator-utility');
@@ -26,33 +51,6 @@ app.post('/ping', (req, res) => {
   // ...
   const sanitizedResponse = validator.escape(example);
   return res.send(sanitizedResponse);  // { message: 'pong!', input: 'HELLO&#x2F;WORLD &lt;sneak&gt;'}
-});
-```
-
-### Use additional functionality
-
-```js
-const validator = require('validator-utility');
-// NOTE: if the following depths are exceeded:
-//  (1) objects will be truncated, and 
-//  (2) arrays will not be processed (i.e., an empty array will be returned).
-validator.configure(
-  100, // max deep depth
-  100, // max array depth
-  true, // supress warrning about truncated object or unprocessed arrays
-  ['/'], // values to NOT escape
-);
-
-// ...
-
-app.post('/ping', (req, res) => {
-  const example = {
-    message: 'pong!',
-    input: req.body.comment, // input: 'HELLO/WORLD <sneak>'
-  };
-  // ...
-  const sanitizedResponse = validator.escape(example);
-  return res.send(sanitizedResponse); // { message: 'pong!', input: 'HELLO/WORLD &lt;sneak&gt;'}
 });
 ```
 
