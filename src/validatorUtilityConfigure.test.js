@@ -1,21 +1,32 @@
-/* eslint-disable no-lone-blocks */
-/* eslint-disable global-require */
-/* eslint-disable no-use-before-define */
 /* eslint-disable no-plusplus */
 /* eslint-disable prefer-destructuring */
-
+/* eslint-disable no-use-before-define */
+/* eslint-disable global-require */
 function main() {
   {
     const validator = require('./validatorUtility');
-    escapeTestSuite(validator, 'export default');
+    validator.configure(
+      100, // max deep depth
+      100, // max array depth
+      true, // supress warrning about truncated object or unprocessed arrays
+      ['/'], // values to NOT escape
+    );
+    configuredEscapeTestSuite(validator, 'export default w/ configure');
   }
 
   {
     // support old way
     const validator = require('./validatorUtility').init();
-    escapeTestSuite(validator, 'init()');
+    validator.configure(
+      100, // max deep depth
+      100, // max array depth
+      true, // supress warrning about truncated object or unprocessed arrays
+      ['/'], // values to NOT escape
+    );
+    configuredEscapeTestSuite(validator, 'init() w/ configure');
   }
 }
+
 class _IdExample {
   constructor(_id) {
     this._id = _id;
@@ -76,7 +87,7 @@ const testObject = (date = new Date(), jsonString = false) => {
   return jsonString ? JSON.stringify(o) : o;
 };
 
-function escapeTestSuite(validator, name = '') {
+function configuredEscapeTestSuite(validator, name = '') {
   describe(`test escape ${name}`, () => {
     test('test normal', () => {
       const date = new Date();
@@ -116,7 +127,7 @@ function escapeTestSuite(validator, name = '') {
         messages: [
           {
             id: 1,
-            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;&#x2F;script&gt;',
+            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
             date: date.toISOString(),
           },
         ],
@@ -130,7 +141,7 @@ function escapeTestSuite(validator, name = '') {
         input: 'HELLO/WORLD <sneak>',
       };
       const sanitized = validator.escape(input);
-      expect(JSON.stringify(sanitized)).toEqual(JSON.stringify({ message: 'pong!', input: 'HELLO&#x2F;WORLD &lt;sneak&gt;' }));
+      expect(JSON.stringify(sanitized)).toEqual(JSON.stringify({ message: 'pong!', input: 'HELLO/WORLD &lt;sneak&gt;' }));
     });
 
     test('test bad string (json-str)', () => {
@@ -172,7 +183,7 @@ function escapeTestSuite(validator, name = '') {
         messages: [
           {
             id: 1,
-            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;&#x2F;script&gt;',
+            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
             date: date.toISOString(),
           },
         ],
@@ -184,7 +195,7 @@ function escapeTestSuite(validator, name = '') {
     test('test normal string', () => {
       const obj = "Hello, <script>alert('world');</script>";
       const sanitized = validator.escape(obj);
-      const expected = 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;&#x2F;script&gt;';
+      const expected = 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;';
       expect(sanitized).toEqual(expected);
     });
 
@@ -230,7 +241,7 @@ function escapeTestSuite(validator, name = '') {
       expect(sanitized).toEqual(expected);
     });
 
-    test('test blacklist undefined', () => {
+    test('test blacklist w/ global config', () => {
       // eslint-disable-next-line quotes
       const obj = `Hello, <script>
       // this comment should be escaped
@@ -238,9 +249,9 @@ function escapeTestSuite(validator, name = '') {
       </script>`;
       const sanitized = validator.escapeString(obj);
       const expected = `Hello, &lt;script&gt;
-      &#x2F;&#x2F; this comment should be escaped
+      // this comment should be escaped
       alert(&#x27;world&#x27;);
-      &lt;&#x2F;script&gt;`;
+      &lt;/script&gt;`;
       expect(sanitized).toEqual(expected);
     });
 
@@ -250,7 +261,7 @@ function escapeTestSuite(validator, name = '') {
       // this comment should not be escaped
       alert('world');
       </script>`;
-      const sanitized = validator.escape(obj, Infinity, Infinity, true, ['/']);
+      const sanitized = validator.escape(obj);
       const expected = `Hello, &lt;script&gt;
       // this comment should not be escaped
       alert(&#x27;world&#x27;);
@@ -295,7 +306,29 @@ function escapeTestSuite(validator, name = '') {
         messages: [
           {
             id: 1,
-            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;&#x2F;script&gt;',
+            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
+            date: date.toISOString(),
+          },
+        ],
+      };
+      expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(expected));
+    });
+
+    test('test max array depth w/ global config', () => {
+      const date = new Date();
+      const obj = testObject(date);
+      for (let i = 0; i < 123; i++) {
+        obj.people.push(obj.people[0]);
+      }
+
+      const sanitized = validator.escape(obj);
+      const expected = {
+        _id: 'example',
+        people: [],
+        messages: [
+          {
+            id: 1,
+            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
             date: date.toISOString(),
           },
         ],
@@ -328,6 +361,32 @@ function escapeTestSuite(validator, name = '') {
         }
       }
       expect(count).toEqual(MAX_DEEP_DEPTH);
+    });
+
+    test('test max deep depth w/ global config', () => {
+      const date = new Date();
+      const obj = testObject(date);
+
+      let ref = obj.people[0];
+      for (let i = 0; i < 123; i++) {
+        ref.people = [];
+        ref.people.push(unsafeCopy(obj.people[0]));
+        ref = ref.people[0];
+      }
+
+      const sanitized = validator.escape(obj);
+
+      let count = 1;
+      ref = sanitized.people[0];
+      for (let i = 0; i < 123; i++) {
+        if (ref && ref.people && ref.people[0]) {
+          count++;
+          ref = ref.people[0];
+        } else {
+          break;
+        }
+      }
+      expect(count).toEqual(100);
     });
 
     test('test normal 0 max depths', () => {
@@ -368,12 +427,20 @@ function escapeTestSuite(validator, name = '') {
         messages: [
           {
             id: 1,
-            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;&#x2F;script&gt;',
+            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
             date: date.toISOString(),
           },
         ],
       };
       expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(expected));
+    });
+
+    test('test normal override the global config', () => {
+      const input = {
+        example: 'COMPANY>STUDIO',
+      };
+      const sanitized = validator.escape(input, Infinity, Infinity, true, ['>']);
+      expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(input));
     });
   });
 }

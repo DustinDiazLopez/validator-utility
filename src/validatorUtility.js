@@ -1,4 +1,12 @@
 /* eslint-disable arrow-body-style */
+
+const __validatorGlobals = {
+  maxDeepDepth: undefined,
+  maxArrayDepth: undefined,
+  supressWarnings: undefined,
+  blacklist: undefined,
+};
+
 /**
  * <strong>NOTE: ONLY USE THIS FUNCTION FOR SENDING JSON OBJECTS (i.e.,
  * use only for sending JSON responses)</strong>
@@ -121,7 +129,11 @@ function _init() {
 
   // eslint-disable-next-line global-require
   const validatorPackage = require('validator');
-  validatorPackage.escape = (str, blacklist = []) => {
+  validatorPackage.escape = (str, blacklist = __validatorGlobals.blacklist) => {
+    if (!(typeof str === 'string' || value instanceof String)) {
+      throw new TypeError('validator-utility - escape/escapeString expected a string but got', typeof str);
+    }
+
     if (_notValidStringOrArray(blacklist)) {
       blacklist = [];
     }
@@ -172,23 +184,52 @@ function _init() {
   delete validatorPackage.escape;
   const result = {
     ...validatorPackage,
+    configure: (maxDeepDepth, maxArrayDepth, supressWarnings, blacklist) => {
+      if (typeof maxDeepDepth === 'number' && maxDeepDepth > 0) {
+        __validatorGlobals.maxDeepDepth = maxDeepDepth;
+      } else {
+        __validatorGlobals.maxDeepDepth = undefined;
+      }
+
+      if (typeof maxArrayDepth === 'number' && maxArrayDepth > 0) {
+        __validatorGlobals.maxArrayDepth = maxArrayDepth;
+      } else {
+        __validatorGlobals.maxArrayDepth = undefined;
+      }
+
+      if (typeof supressWarnings === 'boolean') {
+        __validatorGlobals.supressWarnings = supressWarnings;
+      } else {
+        __validatorGlobals.supressWarnings = undefined;
+      }
+
+      if (Array.isArray(blacklist) || (typeof blacklist === 'string' || blacklist instanceof String)) {
+        __validatorGlobals.blacklist = blacklist;
+      } else {
+        __validatorGlobals.blacklist = undefined;
+      }
+    },
     /**
      * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object
      * @param {any} obj the object/string to sanitize. Required.
-     * @param {number} maxDeepDepth maximum allowed recursion depth. `Infinity` by default.
-     * @param {number} maxArrayDepth maximing allowed array size (depth). `Infinity` by default.
-     * @param {boolean} supressWarnings wether to `console.warn` when an array/object exceeded
-     *                                  the max depth. `false` by default.
+     * @param {number} maxDeepDepth maximum allowed recursion depth.
+     *                                        `Infinity` by default.
+     * @param {number} maxArrayDepth maximing allowed array size (depth).
+     *                                         `Infinity` by default.
+     * @param {boolean} supressWarnings wether to `console.warn` when an
+     *                                            array/object exceeded the max depth.
+     *                                            `false` by default.
+     * @param {string[]|string} blacklist
      * @returns the sanitized object/string. If the input is not a string or an object
      *          it'll be returned. If a JSON-String is inputed it'll parse it and return it back
      *          as a JSON-String (with the appropriate values sanitized).
      */
     escape: (
       obj,
-      maxDeepDepth = Infinity,
-      maxArrayDepth = Infinity,
-      supressWarnings = false,
-      blacklist = [],
+      maxDeepDepth = __validatorGlobals.maxDeepDepth || Infinity,
+      maxArrayDepth = __validatorGlobals.maxArrayDepth || Infinity,
+      supressWarnings = __validatorGlobals.supressWarnings || Infinity,
+      blacklist = __validatorGlobals.blacklist || [],
     ) => newValidatorEscapeRef(
       obj,
       maxDeepDepth,
