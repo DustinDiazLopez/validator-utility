@@ -57,7 +57,7 @@ function modifyValidatorEscape(
         return _obj.toISOString();
       }
 
-      if (_obj === null || _obj === undefined || typeof _obj !== 'object') {
+      if (_obj === null || _obj === undefined || Check.isObject(_obj)) {
         if (Check.isString(_obj)) {
           return _safeEscapeFunction(_obj, escapeFunction, unescapeFunction, ignore);
         }
