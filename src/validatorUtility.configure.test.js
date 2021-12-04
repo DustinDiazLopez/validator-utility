@@ -176,6 +176,12 @@ function configuredEscapeTestSuite(validator, name = '') {
       expect(JSON.stringify(sanitized)).toEqual(JSON.stringify({ message: 'pong!', input: 'HELLO/WORLD &lt;sneak&gt;' }));
     });
 
+    test('test example README w/ global config null', () => {
+      const input = null;
+      const sanitized = validator.escape(input);
+      expect(sanitized).toEqual(null);
+    });
+
     test('test bad string (json-str)', () => {
       const date = new Date();
       const obj = testObject(date, true);
