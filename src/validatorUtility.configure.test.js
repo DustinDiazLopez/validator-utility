@@ -25,6 +25,29 @@ function main() {
     );
     configuredEscapeTestSuite(validator, 'init() w/ configure');
   }
+
+  {
+    const validator = require('./validatorUtility');
+    validator.configure(
+      100, // max deep depth
+      100, // max array depth
+      false, // supress warrning about truncated object or unprocessed arrays
+      ['/'], // values to NOT escape
+    );
+    configuredEscapeTestSuite(validator, 'export default w/ configure');
+  }
+
+  {
+    // support old way
+    const validator = require('./validatorUtility').init();
+    validator.configure(
+      100, // max deep depth
+      100, // max array depth
+      false, // supress warrning about truncated object or unprocessed arrays
+      ['/'], // values to NOT escape
+    );
+    configuredEscapeTestSuite(validator, 'init() w/ configure');
+  }
 }
 
 class _IdExample {
@@ -89,7 +112,16 @@ const testObject = (date = new Date(), jsonString = false) => {
 
 function configuredEscapeTestSuite(validator, name = '') {
   describe(`test escape ${name}`, () => {
-    test('test normal', () => {
+    const warn = console.warn;
+    beforeAll(() => {
+      console.warn = jest.fn();
+    });
+
+    afterAll(() => {
+      console.warn = warn;
+    });
+
+    test('validatorUtility - test normal', () => {
       const date = new Date();
       const obj = testObject(date);
       const sanitized = validator.escape(obj);
