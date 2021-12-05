@@ -88,41 +88,41 @@ var require_utils = __commonJS({
 // src/utils/modifyValidatorEscape.js
 var require_modifyValidatorEscape = __commonJS({
   "src/utils/modifyValidatorEscape.js"(exports2, module2) {
-    var Check = require_value();
+    var check2 = require_value();
     function modifyValidatorEscape2(_validator, _oldValidatorEscapeRef, _safeEscapeFunction) {
       _validator.escape = (obj, maxDeepDepth, maxArrayDepth, supressWarnings, ignore) => {
-        if (!Check.isNumber(maxDeepDepth) || maxDeepDepth <= 0) {
+        if (!check2.isNumber(maxDeepDepth) || maxDeepDepth <= 0) {
           maxDeepDepth = Infinity;
         }
-        if (!Check.isNumber(maxArrayDepth) || maxArrayDepth <= 0) {
+        if (!check2.isNumber(maxArrayDepth) || maxArrayDepth <= 0) {
           maxArrayDepth = Infinity;
         }
         let wasJsonString = false;
-        if (Check.isString(obj)) {
+        if (check2.isString(obj)) {
           try {
             const json = JSON.parse(obj);
-            if (Check.isValidObject(json)) {
+            if (check2.isValidObject(json)) {
               obj = json;
               wasJsonString = true;
             }
           } catch (ignored) {
           }
         }
-        function _sanitizeObject(_obj, escapeFunction, unescapeFunction, depth = 0) {
+        function _sanitizeObject(_obj, escapeFunction, unescapeFunction, currentDeepDepth = 0, nestedArrayDepth = 0) {
           if (_obj instanceof Date) {
             return _obj.toISOString();
           }
           if (_obj === null || _obj === void 0 || typeof _obj !== "object") {
-            if (Check.isString(_obj)) {
+            if (check2.isString(_obj)) {
               return _safeEscapeFunction(_obj, escapeFunction, unescapeFunction, ignore);
             }
             return _obj;
           }
-          if (Check.isArray(_obj)) {
+          if (check2.isArray(_obj)) {
             const arr = [];
-            if (_obj.length < maxArrayDepth) {
-              _obj.forEach((_, i) => {
-                arr[i] = _sanitizeObject(_obj[i], escapeFunction, unescapeFunction, depth);
+            if (_obj.length < maxArrayDepth && nestedArrayDepth < maxDeepDepth) {
+              _obj.forEach((element, i) => {
+                arr[i] = _sanitizeObject(element, escapeFunction, unescapeFunction, currentDeepDepth, nestedArrayDepth + (check2.isArray(element) ? 1 : 0));
               });
             } else if (!supressWarnings) {
               console.warn("WARNING (validator-utility): Exceeded max array depth (array).");
@@ -130,13 +130,13 @@ var require_modifyValidatorEscape = __commonJS({
             return arr;
           }
           const sanitized = {};
-          if (depth < maxDeepDepth) {
+          if (currentDeepDepth < maxDeepDepth) {
             for (const i in _obj) {
               if (i === "_id" && typeof _obj[i] === "object") {
                 const serialId = _obj[i].toString();
-                sanitized[i] = _sanitizeObject(serialId, escapeFunction, unescapeFunction, depth + 1);
+                sanitized[i] = _sanitizeObject(serialId, escapeFunction, unescapeFunction, currentDeepDepth + 1, nestedArrayDepth);
               } else {
-                sanitized[i] = _sanitizeObject(_obj[i], escapeFunction, unescapeFunction, depth + 1);
+                sanitized[i] = _sanitizeObject(_obj[i], escapeFunction, unescapeFunction, currentDeepDepth + 1, nestedArrayDepth);
               }
             }
           } else if (!supressWarnings) {
@@ -144,7 +144,7 @@ var require_modifyValidatorEscape = __commonJS({
           }
           return sanitized;
         }
-        const result = _sanitizeObject(obj, _oldValidatorEscapeRef, _validator.unescape, 0);
+        const result = _sanitizeObject(obj, _oldValidatorEscapeRef, _validator.unescape, 0, 1);
         return wasJsonString ? JSON.stringify(result) : result;
       };
     }
@@ -5877,7 +5877,7 @@ var Validator = class {
     return this.validator.escapeString(str, ignore);
   }
   unescapeString(str) {
-    return this.unescape(str);
+    return this.validator.unescape(str);
   }
   escape(obj, maxDeepDepth = this.maxDeepDepth || Infinity, maxArrayDepth = this.maxArrayDepth || Infinity, supressWarnings = this.supressWarnings || false, ignore = this.blacklist || []) {
     return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, supressWarnings, ignore);

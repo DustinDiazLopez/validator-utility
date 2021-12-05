@@ -512,6 +512,12 @@ function escapeTestSuite(validator, name = '') {
       expect(count).toEqual(MAX_DEEP_DEPTH);
     });
 
+    test('nested array vuln', () => {
+      const input = [[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[['Hello']]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]];
+      const sanitized = validator.escape(input, 10, 10, true, []);
+      expect(JSON.stringify(sanitized)).not.toEqual(JSON.stringify(input));
+    });
+
     test('test normal 0 max depths', () => {
       const date = new Date();
       const obj = testObject(date);
