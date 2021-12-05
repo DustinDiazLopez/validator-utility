@@ -1,23 +1,26 @@
+const toHave = Object.keys(require('validator'));
+
+/* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-lone-blocks */
 /* eslint-disable global-require */
 /* eslint-disable no-use-before-define */
 /* eslint-disable no-plusplus */
 /* eslint-disable prefer-destructuring */
 
-function main() {
+function main(id) {
   {
-    const validator = require('./validatorUtility');
+    const validator = require(id);
     escapeTestSuite(validator, 'export default');
   }
 
   {
     // support old way
-    const validator = require('./validatorUtility').init();
+    const validator = require(id).init();
     escapeTestSuite(validator, 'init()');
   }
 
   {
-    const validator = require('./validatorUtility');
+    const validator = require(id);
     escapeTestSuite(validator, 'export default');
     validator.configure(
       null, // max deep depth
@@ -29,7 +32,7 @@ function main() {
 
   {
     // support old way
-    const validator = require('./validatorUtility').init();
+    const validator = require(id).init();
     validator.configure(
       null, // max deep depth
       null, // max array depth
@@ -108,6 +111,15 @@ function escapeTestSuite(validator, name = '') {
 
     afterAll(() => {
       console.warn = warn;
+    });
+
+    test('custom validator inherited all functions', () => {
+      toHave.forEach((key) => {
+        expect(validator[key]).not.toBeUndefined();
+      });
+      expect(validator.configure).not.toBeUndefined();
+      expect(validator.init).not.toBeUndefined();
+      expect(validator.escape).not.toBeUndefined();
     });
 
     test('test normal', () => {
@@ -584,4 +596,5 @@ function escapeTestSuite(validator, name = '') {
   });
 }
 
-main();
+main('./validatorUtility');
+main('../build/node/10.4/validatorUtility');

@@ -1,10 +1,11 @@
+/* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-plusplus */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-use-before-define */
 /* eslint-disable global-require */
-function main() {
+function main(id) {
   {
-    const validator = require('./validatorUtility');
+    const validator = require(id);
     validator.configure(
       100, // max deep depth
       100, // max array depth
@@ -16,7 +17,7 @@ function main() {
 
   {
     // support old way
-    const validator = require('./validatorUtility').init();
+    const validator = require(id).init();
     validator.configure(
       100, // max deep depth
       100, // max array depth
@@ -27,7 +28,7 @@ function main() {
   }
 
   {
-    const validator = require('./validatorUtility');
+    const validator = require(id);
     validator.configure(
       100, // max deep depth
       100, // max array depth
@@ -39,7 +40,7 @@ function main() {
 
   {
     // support old way
-    const validator = require('./validatorUtility').init();
+    const validator = require(id).init();
     validator.configure(
       100, // max deep depth
       100, // max array depth
@@ -483,4 +484,5 @@ function configuredEscapeTestSuite(validator, name = '') {
   });
 }
 
-main();
+main('./validatorUtility');
+main('../build/node/10.4/validatorUtility');

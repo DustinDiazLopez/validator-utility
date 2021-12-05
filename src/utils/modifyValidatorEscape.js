@@ -1,4 +1,4 @@
-const Check = require('./check');
+const Check = require('./value');
 /**
  * <strong>NOTE: ONLY USE THIS FUNCTION FOR SENDING JSON OBJECTS (i.e.,
  * use only for sending JSON responses)</strong>

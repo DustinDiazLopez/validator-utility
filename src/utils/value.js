@@ -1,5 +1,5 @@
 /* eslint-disable class-methods-use-this */
-class Check {
+class Value {
   isNumber(o) {
     return typeof o === 'number' || o instanceof Number;
   }
@@ -36,4 +36,4 @@ class Check {
   }
 }
 
-module.exports = new Check();
+module.exports = new Value();

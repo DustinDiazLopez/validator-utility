@@ -1,7 +1,7 @@
 /* eslint-disable no-new-object */
 /* eslint-disable no-array-constructor */
 /* eslint-disable no-new-wrappers */
-const Check = require('./check');
+const Check = require('./value');
 
 describe('check', () => {
   describe('isNumber', () => {

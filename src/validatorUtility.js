@@ -1,8 +1,7 @@
 /* eslint-disable global-require */
 /* eslint-disable arrow-body-style */
-const __validatorPackage = require('validator');
-const Check = require('./utils/check');
-const Utils = require('./utils/utils');
+const check = require('./utils/value');
+const utils = require('./utils/utils');
 
 const modifyValidatorEscape = require('./utils/modifyValidatorEscape');
 
@@ -13,19 +12,30 @@ class Validator {
     this.supressWarnings = false;
     this.blacklist = [];
 
-    const v = {
-      ...__validatorPackage,
+    const validator = require('validator');
+    validator.escape = (str, ignore = this.blacklist || []) => {
+      return utils.escape(str, ignore);
     };
-    v.escape = (str, ignore = this.blacklist || []) => {
-      return Utils.escape(str, ignore);
-    };
-    v.escapeString = v.escape;
+    validator.escapeString = validator.escape;
     modifyValidatorEscape(
-      v,
-      v.escapeString,
-      Utils.safeEscape,
+      validator,
+      validator.escapeString,
+      utils.safeEscape,
     );
-    this.validator = v;
+    this.validator = validator;
+
+    const keys = Object.keys(validator);
+    for (const key of keys) {
+      switch (key) {
+        case 'escape':
+        case 'escapeString':
+        case 'configure':
+        case 'init':
+          break;
+        default:
+          this[key] = validator[key];
+      }
+    }
   }
 
   /**
@@ -73,25 +83,25 @@ class Validator {
     supressWarnings = false,
     ignore = [],
   ) {
-    if (Check.isNumber(maxDeepDepth) && maxDeepDepth > 0) {
+    if (check.isNumber(maxDeepDepth) && maxDeepDepth > 0) {
       this.maxDeepDepth = maxDeepDepth;
     } else {
       this.maxDeepDepth = Infinity;
     }
 
-    if (Check.isNumber(maxArrayDepth) && maxArrayDepth > 0) {
+    if (check.isNumber(maxArrayDepth) && maxArrayDepth > 0) {
       this.maxArrayDepth = maxArrayDepth;
     } else {
       this.maxArrayDepth = Infinity;
     }
 
-    if (Check.isBoolean(supressWarnings)) {
+    if (check.isBoolean(supressWarnings)) {
       this.supressWarnings = supressWarnings;
     } else {
       this.supressWarnings = false;
     }
 
-    if (Check.isValidArrayOrString(ignore)) {
+    if (check.isValidArrayOrString(ignore)) {
       this.blacklist = ignore;
     } else {
       this.blacklist = [];

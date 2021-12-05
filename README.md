@@ -9,6 +9,16 @@ This package expands upon the functionality of the `escape` method in the [valid
 - If a key is named `_id` and its value is an `object` it'll try to do a `.toString()` on that value
 - If a value is an `instanceof Date` it'll call `.toISOString()` on that date value.
 
+## Install
+
+Install package with:
+
+```bash
+npm i validator-utility
+```
+
+Or download the [standalone file (node10.4+)](./build/node/10.4/validatorUtility.js)
+
 ## Usage
 
 ```js

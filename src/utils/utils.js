@@ -1,16 +1,16 @@
 /* eslint-disable class-methods-use-this */
-const Check = require('./check');
+const check = require('./value');
 
 class Utils {
   escape(str, ignore = []) {
-    if (!Check.isString(str)) {
+    if (!check.isString(str)) {
       throw new TypeError(
         'validator-utility - escape/escapeString expected a string but got',
         typeof str,
       );
     }
 
-    if (!Check.isValidArrayOrString(ignore)) {
+    if (!check.isValidArrayOrString(ignore)) {
       ignore = [];
     }
 
