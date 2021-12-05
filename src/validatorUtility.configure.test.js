@@ -1,10 +1,11 @@
+/* eslint-disable import/no-dynamic-require */
 /* eslint-disable no-plusplus */
 /* eslint-disable prefer-destructuring */
 /* eslint-disable no-use-before-define */
 /* eslint-disable global-require */
-function main() {
+function main(id) {
   {
-    const validator = require('./validatorUtility');
+    const validator = require(id);
     validator.configure(
       100, // max deep depth
       100, // max array depth
@@ -16,11 +17,34 @@ function main() {
 
   {
     // support old way
-    const validator = require('./validatorUtility').init();
+    const validator = require(id).init();
     validator.configure(
       100, // max deep depth
       100, // max array depth
       true, // supress warrning about truncated object or unprocessed arrays
+      ['/'], // values to NOT escape
+    );
+    configuredEscapeTestSuite(validator, 'init() w/ configure');
+  }
+
+  {
+    const validator = require(id);
+    validator.configure(
+      100, // max deep depth
+      100, // max array depth
+      false, // supress warrning about truncated object or unprocessed arrays
+      ['/'], // values to NOT escape
+    );
+    configuredEscapeTestSuite(validator, 'export default w/ configure');
+  }
+
+  {
+    // support old way
+    const validator = require(id).init();
+    validator.configure(
+      100, // max deep depth
+      100, // max array depth
+      false, // supress warrning about truncated object or unprocessed arrays
       ['/'], // values to NOT escape
     );
     configuredEscapeTestSuite(validator, 'init() w/ configure');
@@ -89,7 +113,16 @@ const testObject = (date = new Date(), jsonString = false) => {
 
 function configuredEscapeTestSuite(validator, name = '') {
   describe(`test escape ${name}`, () => {
-    test('test normal', () => {
+    const warn = console.warn;
+    beforeAll(() => {
+      console.warn = jest.fn();
+    });
+
+    afterAll(() => {
+      console.warn = warn;
+    });
+
+    test('validatorUtility - test normal', () => {
       const date = new Date();
       const obj = testObject(date);
       const sanitized = validator.escape(obj);
@@ -142,6 +175,12 @@ function configuredEscapeTestSuite(validator, name = '') {
       };
       const sanitized = validator.escape(input);
       expect(JSON.stringify(sanitized)).toEqual(JSON.stringify({ message: 'pong!', input: 'HELLO/WORLD &lt;sneak&gt;' }));
+    });
+
+    test('test example README w/ global config null', () => {
+      const input = null;
+      const sanitized = validator.escape(input);
+      expect(sanitized).toEqual(null);
     });
 
     test('test bad string (json-str)', () => {
@@ -445,4 +484,5 @@ function configuredEscapeTestSuite(validator, name = '') {
   });
 }
 
-main();
+main('./validatorUtility');
+main('../build/node/10.4/validatorUtility');

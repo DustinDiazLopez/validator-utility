@@ -4,6 +4,9 @@ module.exports = {
     es2021: true,
     node: true,
   },
+  ignorePatterns: [
+    'build/*',
+  ],
   extends: [
     'airbnb-base',
   ],

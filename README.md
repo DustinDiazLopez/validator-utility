@@ -9,6 +9,16 @@ This package expands upon the functionality of the `escape` method in the [valid
 - If a key is named `_id` and its value is an `object` it'll try to do a `.toString()` on that value
 - If a value is an `instanceof Date` it'll call `.toISOString()` on that date value.
 
+## Install
+
+Install package with:
+
+```bash
+npm i validator-utility
+```
+
+Or download the [standalone file (node10.4+)](./build/node/10.4/validatorUtility.js)
+
 ## Usage
 
 ```js
@@ -17,11 +27,11 @@ const validator = require('validator-utility');
 //  (1) objects will be truncated, and 
 //  (2) arrays will not be processed (i.e., an empty array will be returned).
 validator.configure(
-  100, // max deep depth (can be Infinity)
-  100, // max array depth (can be Infinity)
-  true, // supress warrning about truncated object or unprocessed arrays
-  ['/'], // values to NOT escape (can be an empty array)
-);
+  100, // max deep depth (can be Infinity - default)
+  100, // max array depth (can be Infinity - default)
+  true, // supress warrning about truncated object or unprocessed arrays (false - default)
+  ['/'], // values to NOT escape (can be an empty array - default)
+); // .configure(...) is optional
 
 // ...
 
@@ -33,24 +43,6 @@ app.post('/ping', (req, res) => {
   // ...
   const sanitizedResponse = validator.escape(example);
   return res.send(sanitizedResponse); // { message: 'pong!', input: 'HELLO/WORLD &lt;sneak&gt;'}
-});
-```
-
-### No Configure
-
-```js
-const validator = require('validator-utility');
-
-// ...
-
-app.post('/ping', (req, res) => {
-  const example = {
-    message: 'pong!',
-    input: req.body.comment, // input: 'HELLO/WORLD <sneak>'
-  };
-  // ...
-  const sanitizedResponse = validator.escape(example);
-  return res.send(sanitizedResponse);  // { message: 'pong!', input: 'HELLO&#x2F;WORLD &lt;sneak&gt;'}
 });
 ```
 
@@ -82,3 +74,41 @@ validator.escape(
 ```
 
 For documentation on other `validator` methods refer to the [validator](https://www.npmjs.com/package/validator)'s documentation.
+
+### Example I/O
+
+```js
+const input = '{ "message": "<sneak>" }'; // json string
+// const output = validator.escape(input);
+const output = '{ "message": "&lt;sneak&gt;" }'; // will return json string with appropriate values sanitized
+```
+
+```js
+const input = { message: '<sneak>' }; // object
+// const output = validator.escape(input);
+const output = { message: '&lt;sneak&gt;' }; // will return object with appropriate values sanitized
+```
+
+```js
+const input = [ { message: '<sneak>' }, ... ]; // arrays
+// const output = validator.escape(input);
+const output = [ { message: '&lt;sneak&gt;' }, ... ]; // will return array with appropriate values sanitized
+```
+
+```js
+const input = { _id: [Object] }; // objects with _id
+// const output = validator.escape(input);
+const output = { _id: 'id-...' }; // will call .toString() on the value of _id
+```
+
+```js
+const input = { date: new Date() }; // date
+// const output = validator.escape(input);
+const output = { date: '2021-12-04T10:35:06.353Z' }; // will return the date as an ISO string
+```
+
+```js
+const input = (a, b) => a + b; // function
+// const output = validator.escape(input);
+const output = (a, b) => a + b; // will return the function (same applies for things that are not objects or strings)
+```
