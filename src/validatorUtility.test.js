@@ -43,7 +43,7 @@ function main(id) {
   }
 
   {
-    const validator = require('./validatorUtility');
+    const validator = require(id);
     escapeTestSuite(validator, 'export default');
     validator.configure(
       null, // max deep depth
@@ -55,7 +55,7 @@ function main(id) {
 
   {
     // support old way
-    const validator = require('./validatorUtility').init();
+    const validator = require(id).init();
     validator.configure(
       null, // max deep depth
       null, // max array depth
