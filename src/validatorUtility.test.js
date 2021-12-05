@@ -518,6 +518,15 @@ function escapeTestSuite(validator, name = '') {
       expect(JSON.stringify(sanitized)).not.toEqual(JSON.stringify(input));
     });
 
+    test('nested object vuln', () => {
+      const input = {
+        // eslint-disable-next-line max-len
+        hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: { hello: {} } } } } } } } } } } } } } } } } } } },
+      };
+      const sanitized = validator.escape(input, 10, 10, true, []);
+      expect(JSON.stringify(sanitized)).not.toEqual(JSON.stringify(input));
+    });
+
     test('test normal 0 max depths', () => {
       const date = new Date();
       const obj = testObject(date);
