@@ -11,7 +11,7 @@ This package expands upon the functionality of the `escape` method in the [valid
 
 ## Install
 
-Install/Update package (use `1.1.1`) with:
+Install/Update package (use latest release) with:
 
 ```bash
 npm i validator-utility
