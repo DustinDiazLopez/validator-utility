@@ -47,6 +47,44 @@ app.post('/ping', (req, res) => {
 });
 ```
 
+### Example I/O
+
+```js
+const input = '{ "message": "<sneak>" }'; // json string
+// const output = validator.escape(input);
+const output = '{ "message": "&lt;sneak&gt;" }'; // will return json string with appropriate values sanitized
+```
+
+```js
+const input = { message: '<sneak>' }; // object
+// const output = validator.escape(input);
+const output = { message: '&lt;sneak&gt;' }; // will return object with appropriate values sanitized
+```
+
+```js
+const input = [ { message: '<sneak>' }, ... ]; // arrays
+// const output = validator.escape(input);
+const output = [ { message: '&lt;sneak&gt;' }, ... ]; // will return array with appropriate values sanitized
+```
+
+```js
+const input = { _id: [Object] }; // objects with _id
+// const output = validator.escape(input);
+const output = { _id: 'id-...' }; // will call .toString() on the value of _id
+```
+
+```js
+const input = { date: new Date() }; // date
+// const output = validator.escape(input);
+const output = { date: '2021-12-04T10:35:06.353Z' }; // will return the date as an ISO string
+```
+
+```js
+const input = (a, b) => a + b; // function
+// const output = validator.escape(input);
+const output = (a, b) => a + b; // will return the function (same applies for things that are not objects or strings)
+```
+
 ### Types
 
 ```ts
@@ -112,41 +150,3 @@ declare module 'validator-utility' {
 ```
 
 For documentation on other `validator` methods refer to the [validator](https://www.npmjs.com/package/validator)'s documentation.
-
-### Example I/O
-
-```js
-const input = '{ "message": "<sneak>" }'; // json string
-// const output = validator.escape(input);
-const output = '{ "message": "&lt;sneak&gt;" }'; // will return json string with appropriate values sanitized
-```
-
-```js
-const input = { message: '<sneak>' }; // object
-// const output = validator.escape(input);
-const output = { message: '&lt;sneak&gt;' }; // will return object with appropriate values sanitized
-```
-
-```js
-const input = [ { message: '<sneak>' }, ... ]; // arrays
-// const output = validator.escape(input);
-const output = [ { message: '&lt;sneak&gt;' }, ... ]; // will return array with appropriate values sanitized
-```
-
-```js
-const input = { _id: [Object] }; // objects with _id
-// const output = validator.escape(input);
-const output = { _id: 'id-...' }; // will call .toString() on the value of _id
-```
-
-```js
-const input = { date: new Date() }; // date
-// const output = validator.escape(input);
-const output = { date: '2021-12-04T10:35:06.353Z' }; // will return the date as an ISO string
-```
-
-```js
-const input = (a, b) => a + b; // function
-// const output = validator.escape(input);
-const output = (a, b) => a + b; // will return the function (same applies for things that are not objects or strings)
-```
