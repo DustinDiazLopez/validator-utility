@@ -90,7 +90,7 @@ var require_modifyValidatorEscape = __commonJS({
   "src/utils/modifyValidatorEscape.js"(exports2, module2) {
     var check2 = require_value();
     function modifyValidatorEscape2(_validator, _oldValidatorEscapeRef, _safeEscapeFunction) {
-      _validator.escape = (obj, maxDeepDepth, maxArrayDepth, supressWarnings, ignore) => {
+      _validator.escape = (obj, maxDeepDepth, maxArrayDepth, supressWarnings, ignore, truncateArray) => {
         if (!check2.isNumber(maxDeepDepth) || maxDeepDepth <= 0) {
           maxDeepDepth = Infinity;
         }
@@ -120,12 +120,21 @@ var require_modifyValidatorEscape = __commonJS({
           }
           if (check2.isArray(_obj)) {
             const arr = [];
-            if (_obj.length < maxArrayDepth && nestedArrayDepth < maxDeepDepth) {
+            if (truncateArray) {
+              if (nestedArrayDepth < maxDeepDepth) {
+                for (let i = 0; i < _obj.length && i < maxArrayDepth; i += 1) {
+                  const element = _obj[i];
+                  arr[i] = _sanitizeObject(element, escapeFunction, unescapeFunction, currentDeepDepth, nestedArrayDepth + (check2.isArray(element) ? 1 : 0));
+                }
+              } else if (!supressWarnings) {
+                console.warn(`WARNING (validator-utility): exceeded max deep depth, i.e., nested arrays (${nestedArrayDepth < maxDeepDepth}).`);
+              }
+            } else if (_obj.length < maxArrayDepth && nestedArrayDepth < maxDeepDepth) {
               _obj.forEach((element, i) => {
                 arr[i] = _sanitizeObject(element, escapeFunction, unescapeFunction, currentDeepDepth, nestedArrayDepth + (check2.isArray(element) ? 1 : 0));
               });
             } else if (!supressWarnings) {
-              console.warn("WARNING (validator-utility): Exceeded max array depth (array).");
+              console.warn(`WARNING (validator-utility): Exceeded max array depth (${_obj.length < maxArrayDepth}), or exceeded max deep depth, i.e., nested arrays (${nestedArrayDepth < maxDeepDepth}).`);
             }
             return arr;
           }
@@ -5853,6 +5862,7 @@ var Validator = class {
     this.maxArrayDepth = Infinity;
     this.suppressWarnings = false;
     this.ignore = [];
+    this.truncateArray = false;
     const validator = require_validator();
     validator.escape = (str, ignore = this.ignore || []) => {
       return utils.escape(str, ignore);
@@ -5879,10 +5889,10 @@ var Validator = class {
   unescapeString(str) {
     return this.validator.unescape(str);
   }
-  escape(obj, maxDeepDepth = this.maxDeepDepth || Infinity, maxArrayDepth = this.maxArrayDepth || Infinity, suppressWarnings = this.suppressWarnings || false, ignore = this.ignore || []) {
-    return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, suppressWarnings, ignore);
+  escape(obj, maxDeepDepth = this.maxDeepDepth || Infinity, maxArrayDepth = this.maxArrayDepth || Infinity, suppressWarnings = this.suppressWarnings || false, ignore = this.ignore || [], truncateArray = this.truncateArray || false) {
+    return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, suppressWarnings, ignore, truncateArray);
   }
-  configure(maxDeepDepth = Infinity, maxArrayDepth = Infinity, supressWarnings = false, ignore = []) {
+  configure(maxDeepDepth = Infinity, maxArrayDepth = Infinity, supressWarnings = false, ignore = [], truncateArray = false) {
     if (check.isNumber(maxDeepDepth) && maxDeepDepth > 0) {
       this.maxDeepDepth = maxDeepDepth;
     } else {
@@ -5903,10 +5913,15 @@ var Validator = class {
     } else {
       this.ignore = [];
     }
+    if (check.isBoolean(truncateArray)) {
+      this.truncateArray = truncateArray;
+    } else {
+      this.truncateArray = false;
+    }
     return this;
   }
   config(options) {
-    return this.configure(options.maxDeepDepth, options.maxArrayDepth, options.suppressWarnings, options.ignore);
+    return this.configure(options.maxDeepDepth, options.maxArrayDepth, options.suppressWarnings, options.ignore, options.truncateArray);
   }
   init() {
     return this;

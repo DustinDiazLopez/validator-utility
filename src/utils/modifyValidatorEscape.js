@@ -30,6 +30,7 @@ function modifyValidatorEscape(
     maxArrayDepth,
     supressWarnings,
     ignore,
+    truncateArray,
   ) => {
     if (!check.isNumber(maxDeepDepth) || maxDeepDepth <= 0) {
       maxDeepDepth = Infinity;
@@ -72,7 +73,22 @@ function modifyValidatorEscape(
 
       if (check.isArray(_obj)) {
         const arr = [];
-        if (_obj.length < maxArrayDepth && nestedArrayDepth < maxDeepDepth) {
+        if (truncateArray) {
+          if (nestedArrayDepth < maxDeepDepth) {
+            for (let i = 0; i < _obj.length && i < maxArrayDepth; i += 1) {
+              const element = _obj[i];
+              arr[i] = _sanitizeObject(
+                element,
+                escapeFunction,
+                unescapeFunction,
+                currentDeepDepth,
+                nestedArrayDepth + (check.isArray(element) ? 1 : 0),
+              );
+            }
+          } else if (!supressWarnings) {
+            console.warn(`WARNING (validator-utility): exceeded max deep depth, i.e., nested arrays (${nestedArrayDepth < maxDeepDepth}).`);
+          }
+        } else if (_obj.length < maxArrayDepth && nestedArrayDepth < maxDeepDepth) {
           _obj.forEach((element, i) => {
             arr[i] = _sanitizeObject(
               element,
@@ -83,7 +99,7 @@ function modifyValidatorEscape(
             );
           });
         } else if (!supressWarnings) {
-          console.warn('WARNING (validator-utility): Exceeded max array depth (array).');
+          console.warn(`WARNING (validator-utility): Exceeded max array depth (${_obj.length < maxArrayDepth}), or exceeded max deep depth, i.e., nested arrays (${nestedArrayDepth < maxDeepDepth}).`);
         }
         return arr;
       }
@@ -117,7 +133,13 @@ function modifyValidatorEscape(
       return sanitized;
     }
 
-    const result = _sanitizeObject(obj, _oldValidatorEscapeRef, _validator.unescape, 0, 1);
+    const result = _sanitizeObject(
+      obj,
+      _oldValidatorEscapeRef,
+      _validator.unescape,
+      0,
+      1,
+    );
     return wasJsonString ? JSON.stringify(result) : result;
   };
 }
