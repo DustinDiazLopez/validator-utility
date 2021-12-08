@@ -9,11 +9,12 @@ class Validator {
   constructor() {
     this.maxDeepDepth = Infinity;
     this.maxArrayDepth = Infinity;
-    this.supressWarnings = false;
-    this.blacklist = [];
+    this.suppressWarnings = false;
+    this.ignore = [];
+    this.truncateArray = false;
 
     const validator = require('validator');
-    validator.escape = (str, ignore = this.blacklist || []) => {
+    validator.escape = (str, ignore = this.ignore || []) => {
       return utils.escape(str, ignore);
     };
     validator.escapeString = validator.escape;
@@ -41,7 +42,7 @@ class Validator {
   /**
    * Replace `<`, `>`, `&`, `'`, `"` and `/` with HTML entities.
    */
-  escapeString(str, ignore = this.blacklist || []) {
+  escapeString(str, ignore = this.ignore || []) {
     return this.validator.escapeString(str, ignore);
   }
 
@@ -53,28 +54,40 @@ class Validator {
   }
 
   /**
-     * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object
-     * @param {any} obj the object/string to sanitize. Required.
-     * @param {number} maxDeepDepth maximum allowed recursion depth.
-     *                              `Infinity` by default.
-     * @param {number} maxArrayDepth maximing allowed array size (depth).
-     *                               `Infinity` by default.
-     * @param {boolean} supressWarnings wether to `console.warn` when an
-     *                                  array/object exceeded the max depth.
-     *                                  `false` by default.
-     * @param {string[]|string} ignore
-     * @returns the sanitized object/string. If the input is not a string or an object
-     *          it'll be returned. If a JSON-String is inputed it'll parse it and return it back
-     *          as a JSON-String (with the appropriate values sanitized).
-     */
+   * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object
+   * @param {any} obj the object/string to sanitize. Required.
+   * @param {number} maxDeepDepth maximum allowed recursion depth.
+   *                              `Infinity` by default.
+   * @param {number} maxArrayDepth maximing allowed array size (depth).
+   *                               `Infinity` by default.
+   * @param {boolean} suppressWarnings wether to `console.warn` when an
+   *                                  array/object exceeded the max depth.
+   *                                  `false` by default.
+   * @param {boolean} truncateArray if true, the array will be truncated if `maxArrayDepth` is
+   *                                exceeded. If false, the array will not be processed if
+   *                                `maxArrayDepth` is exceeded.
+   *
+   * @param {string[]|string} ignore characters that will NOT be escaped.
+   * @returns the sanitized object/string. If the input is not a string or an object
+   *          it'll be returned. If a JSON-String is inputed it'll parse it and return it back
+   *          as a JSON-String (with the appropriate values sanitized).
+   */
   escape(
     obj,
     maxDeepDepth = this.maxDeepDepth || Infinity,
     maxArrayDepth = this.maxArrayDepth || Infinity,
-    supressWarnings = this.supressWarnings || false,
-    ignore = this.blacklist || [],
+    suppressWarnings = this.suppressWarnings || false,
+    ignore = this.ignore || [],
+    truncateArray = this.truncateArray || false,
   ) {
-    return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, supressWarnings, ignore);
+    return this.validator.escape(
+      obj,
+      maxDeepDepth,
+      maxArrayDepth,
+      suppressWarnings,
+      ignore,
+      truncateArray,
+    );
   }
 
   configure(
@@ -82,6 +95,7 @@ class Validator {
     maxArrayDepth = Infinity,
     supressWarnings = false,
     ignore = [],
+    truncateArray = false,
   ) {
     if (check.isNumber(maxDeepDepth) && maxDeepDepth > 0) {
       this.maxDeepDepth = maxDeepDepth;
@@ -96,16 +110,39 @@ class Validator {
     }
 
     if (check.isBoolean(supressWarnings)) {
-      this.supressWarnings = supressWarnings;
+      this.suppressWarnings = supressWarnings;
     } else {
-      this.supressWarnings = false;
+      this.suppressWarnings = false;
     }
 
     if (check.isValidArrayOrString(ignore)) {
-      this.blacklist = ignore;
+      this.ignore = ignore;
     } else {
-      this.blacklist = [];
+      this.ignore = [];
     }
+
+    if (check.isBoolean(truncateArray)) {
+      this.truncateArray = truncateArray;
+    } else {
+      this.truncateArray = false;
+    }
+
+    return this;
+  }
+
+  /**
+   * Calls the `.configure(...)` method.
+   * @param {object} options `maxDeepDepth`, `maxArrayDepth`, `suppressWarnings`, `ignore`, and
+   *                         `truncateArray`
+   */
+  config(options) {
+    return this.configure(
+      options.maxDeepDepth,
+      options.maxArrayDepth,
+      options.suppressWarnings,
+      options.ignore,
+      options.truncateArray,
+    );
   }
 
   init() {

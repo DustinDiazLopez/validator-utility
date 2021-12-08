@@ -1,12 +1,13 @@
 {
   "name": "validator-utility",
-  "version": "1.0.9",
+  "version": "1.1.1",
   "description": "Extend validator functionality",
   "main": "src/validatorUtility.js",
   "author": "DustinDiazLopez",
   "license": "MIT",
   "scripts": {
     "test": "jest",
+    "test:file": "jest --",
     "build": "ts-node build.ts",
     "dev": "npm run build && npm run test"
   },

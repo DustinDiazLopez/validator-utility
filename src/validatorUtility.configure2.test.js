@@ -6,60 +6,14 @@
 function main(id) {
   {
     const validator = require(id);
-    validator.configure(
-      100, // max deep depth
-      100, // max array depth
-      true, // supress warrning about truncated object or unprocessed arrays
-      ['/'], // values to NOT escape
-    );
-    configuredEscapeTestSuite(validator, 'export default w/ configure');
-  }
-
-  {
-    // support old way
-    const validator = require(id).init();
-    validator.configure(
-      100, // max deep depth
-      100, // max array depth
-      true, // supress warrning about truncated object or unprocessed arrays
-      ['/'], // values to NOT escape
-    );
-    configuredEscapeTestSuite(validator, 'init() w/ configure');
-  }
-
-  {
-    const validator = require(id);
-    validator.configure(
-      100, // max deep depth
-      100, // max array depth
-      false, // supress warrning about truncated object or unprocessed arrays
-      ['/'], // values to NOT escape
-    );
-    configuredEscapeTestSuite(validator, 'export default w/ configure');
-  }
-
-  {
-    // support old way
-    const validator = require(id).init();
-    validator.configure(
-      100, // max deep depth
-      100, // max array depth
-      false, // supress warrning about truncated object or unprocessed arrays
-      ['/'], // values to NOT escape
-    );
-    configuredEscapeTestSuite(validator, 'init() w/ configure');
-  }
-
-  // config
-  {
-    const validator = require(id);
     validator.config({
       maxDeepDepth: 100,
       maxArrayDepth: 100,
       suppressWarnings: false,
       ignore: ['/'],
+      truncateArray: true,
     });
-    configuredEscapeTestSuite(validator, 'export default w/ configure');
+    configuredEscapeTestSuite(validator, 'export default w/ configure and truncate');
   }
 
   {
@@ -70,8 +24,9 @@ function main(id) {
       maxArrayDepth: 100,
       suppressWarnings: false,
       ignore: ['/'],
+      truncateArray: true,
     });
-    configuredEscapeTestSuite(validator, 'init() w/ configure');
+    configuredEscapeTestSuite(validator, 'init() w/ configure and truncate');
   }
 }
 
@@ -355,50 +310,6 @@ function configuredEscapeTestSuite(validator, name = '') {
       expect(sanitizedFunction(1, 1)).toEqual(2);
     });
 
-    test('test max array depth', () => {
-      const date = new Date();
-      const obj = testObject(date);
-      for (let i = 0; i < 50; i++) {
-        obj.people.push(obj.people[0]);
-      }
-
-      const sanitized = validator.escape(obj, -1, 5, true);
-      const expected = {
-        _id: 'example',
-        people: [],
-        messages: [
-          {
-            id: 1,
-            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
-            date: date.toISOString(),
-          },
-        ],
-      };
-      expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(expected));
-    });
-
-    test('test max array depth w/ global config', () => {
-      const date = new Date();
-      const obj = testObject(date);
-      for (let i = 0; i < 123; i++) {
-        obj.people.push(obj.people[0]);
-      }
-
-      const sanitized = validator.escape(obj);
-      const expected = {
-        _id: 'example',
-        people: [],
-        messages: [
-          {
-            id: 1,
-            message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
-            date: date.toISOString(),
-          },
-        ],
-      };
-      expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(expected));
-    });
-
     test('test max deep depth', () => {
       const date = new Date();
       const obj = testObject(date);
@@ -505,6 +416,58 @@ function configuredEscapeTestSuite(validator, name = '') {
       const sanitized = validator.escape(input, Infinity, Infinity, true, ['>']);
       expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(input));
     });
+  });
+
+  test('test max array depth', () => {
+    const date = new Date();
+    const obj = testObject(date);
+    for (let i = 0; i < 150; i++) {
+      obj.people.push(obj.people[0]);
+    }
+
+    let expectedArray = unsafeCopy(obj.people);
+    expectedArray = expectedArray.splice(0, 5);
+
+    const sanitized = validator.escape(obj, -1, 5, true, ['/'], true);
+    const expected = {
+      _id: 'example',
+      people: expectedArray,
+      messages: [
+        {
+          id: 1,
+          message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
+          date: date.toISOString(),
+        },
+      ],
+    };
+    expect(sanitized.people.length).toEqual(expected.people.length);
+    expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(expected));
+  });
+
+  test('test max array depth w/ global config', () => {
+    const date = new Date();
+    const obj = testObject(date);
+    for (let i = 0; i < 500; i++) {
+      obj.people.push(obj.people[0]);
+    }
+
+    let expectedArray = unsafeCopy(obj.people);
+    expectedArray = expectedArray.splice(0, 100);
+
+    const sanitized = validator.escape(obj);
+    const expected = {
+      _id: 'example',
+      people: expectedArray,
+      messages: [
+        {
+          id: 1,
+          message: 'Hello, &lt;script&gt;alert(&#x27;world&#x27;);&lt;/script&gt;',
+          date: date.toISOString(),
+        },
+      ],
+    };
+    expect(sanitized.people.length).toEqual(expected.people.length);
+    expect(JSON.stringify(sanitized)).toEqual(JSON.stringify(expected));
   });
 }
 
