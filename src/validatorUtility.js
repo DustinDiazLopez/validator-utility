@@ -108,6 +108,19 @@ class Validator {
     }
   }
 
+  /**
+   * Calls the `.configure(...)` method.
+   * @param {object} options `maxDeepDepth`, `maxArrayDepth`, `supressWarnings`, and `ignore`
+   */
+  config(options) {
+    this.configure(
+      options.maxDeepDepth,
+      options.maxArrayDepth,
+      options.supressWarnings,
+      options.ignore,
+    );
+  }
+
   init() {
     return this;
   }

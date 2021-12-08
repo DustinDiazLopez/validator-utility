@@ -5904,6 +5904,9 @@ var Validator = class {
       this.blacklist = [];
     }
   }
+  config(options) {
+    this.configure(options.maxDeepDepth, options.maxArrayDepth, options.supressWarnings, options.ignore);
+  }
   init() {
     return this;
   }
