@@ -5851,10 +5851,10 @@ var Validator = class {
   constructor() {
     this.maxDeepDepth = Infinity;
     this.maxArrayDepth = Infinity;
-    this.supressWarnings = false;
-    this.blacklist = [];
+    this.suppressWarnings = false;
+    this.ignore = [];
     const validator = require_validator();
-    validator.escape = (str, ignore = this.blacklist || []) => {
+    validator.escape = (str, ignore = this.ignore || []) => {
       return utils.escape(str, ignore);
     };
     validator.escapeString = validator.escape;
@@ -5873,14 +5873,14 @@ var Validator = class {
       }
     }
   }
-  escapeString(str, ignore = this.blacklist || []) {
+  escapeString(str, ignore = this.ignore || []) {
     return this.validator.escapeString(str, ignore);
   }
   unescapeString(str) {
     return this.validator.unescape(str);
   }
-  escape(obj, maxDeepDepth = this.maxDeepDepth || Infinity, maxArrayDepth = this.maxArrayDepth || Infinity, supressWarnings = this.supressWarnings || false, ignore = this.blacklist || []) {
-    return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, supressWarnings, ignore);
+  escape(obj, maxDeepDepth = this.maxDeepDepth || Infinity, maxArrayDepth = this.maxArrayDepth || Infinity, suppressWarnings = this.suppressWarnings || false, ignore = this.ignore || []) {
+    return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, suppressWarnings, ignore);
   }
   configure(maxDeepDepth = Infinity, maxArrayDepth = Infinity, supressWarnings = false, ignore = []) {
     if (check.isNumber(maxDeepDepth) && maxDeepDepth > 0) {
@@ -5894,18 +5894,19 @@ var Validator = class {
       this.maxArrayDepth = Infinity;
     }
     if (check.isBoolean(supressWarnings)) {
-      this.supressWarnings = supressWarnings;
+      this.suppressWarnings = supressWarnings;
     } else {
-      this.supressWarnings = false;
+      this.suppressWarnings = false;
     }
     if (check.isValidArrayOrString(ignore)) {
-      this.blacklist = ignore;
+      this.ignore = ignore;
     } else {
-      this.blacklist = [];
+      this.ignore = [];
     }
+    return this;
   }
   config(options) {
-    this.configure(options.maxDeepDepth, options.maxArrayDepth, options.supressWarnings, options.ignore);
+    return this.configure(options.maxDeepDepth, options.maxArrayDepth, options.suppressWarnings, options.ignore);
   }
   init() {
     return this;

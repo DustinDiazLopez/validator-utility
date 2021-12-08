@@ -9,11 +9,11 @@ class Validator {
   constructor() {
     this.maxDeepDepth = Infinity;
     this.maxArrayDepth = Infinity;
-    this.supressWarnings = false;
-    this.blacklist = [];
+    this.suppressWarnings = false;
+    this.ignore = [];
 
     const validator = require('validator');
-    validator.escape = (str, ignore = this.blacklist || []) => {
+    validator.escape = (str, ignore = this.ignore || []) => {
       return utils.escape(str, ignore);
     };
     validator.escapeString = validator.escape;
@@ -41,7 +41,7 @@ class Validator {
   /**
    * Replace `<`, `>`, `&`, `'`, `"` and `/` with HTML entities.
    */
-  escapeString(str, ignore = this.blacklist || []) {
+  escapeString(str, ignore = this.ignore || []) {
     return this.validator.escapeString(str, ignore);
   }
 
@@ -59,7 +59,7 @@ class Validator {
      *                              `Infinity` by default.
      * @param {number} maxArrayDepth maximing allowed array size (depth).
      *                               `Infinity` by default.
-     * @param {boolean} supressWarnings wether to `console.warn` when an
+     * @param {boolean} suppressWarnings wether to `console.warn` when an
      *                                  array/object exceeded the max depth.
      *                                  `false` by default.
      * @param {string[]|string} ignore
@@ -71,10 +71,10 @@ class Validator {
     obj,
     maxDeepDepth = this.maxDeepDepth || Infinity,
     maxArrayDepth = this.maxArrayDepth || Infinity,
-    supressWarnings = this.supressWarnings || false,
-    ignore = this.blacklist || [],
+    suppressWarnings = this.suppressWarnings || false,
+    ignore = this.ignore || [],
   ) {
-    return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, supressWarnings, ignore);
+    return this.validator.escape(obj, maxDeepDepth, maxArrayDepth, suppressWarnings, ignore);
   }
 
   configure(
@@ -96,27 +96,29 @@ class Validator {
     }
 
     if (check.isBoolean(supressWarnings)) {
-      this.supressWarnings = supressWarnings;
+      this.suppressWarnings = supressWarnings;
     } else {
-      this.supressWarnings = false;
+      this.suppressWarnings = false;
     }
 
     if (check.isValidArrayOrString(ignore)) {
-      this.blacklist = ignore;
+      this.ignore = ignore;
     } else {
-      this.blacklist = [];
+      this.ignore = [];
     }
+
+    return this;
   }
 
   /**
    * Calls the `.configure(...)` method.
-   * @param {object} options `maxDeepDepth`, `maxArrayDepth`, `supressWarnings`, and `ignore`
+   * @param {object} options `maxDeepDepth`, `maxArrayDepth`, `suppressWarnings`, and `ignore`
    */
   config(options) {
-    this.configure(
+    return this.configure(
       options.maxDeepDepth,
       options.maxArrayDepth,
-      options.supressWarnings,
+      options.suppressWarnings,
       options.ignore,
     );
   }
