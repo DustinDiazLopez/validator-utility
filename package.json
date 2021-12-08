@@ -7,6 +7,7 @@
   "license": "MIT",
   "scripts": {
     "test": "jest",
+    "test:file": "jest --",
     "build": "ts-node build.ts",
     "dev": "npm run build && npm run test"
   },
