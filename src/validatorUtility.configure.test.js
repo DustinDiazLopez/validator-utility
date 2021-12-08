@@ -49,6 +49,30 @@ function main(id) {
     );
     configuredEscapeTestSuite(validator, 'init() w/ configure');
   }
+
+  // config
+  {
+    const validator = require(id);
+    validator.config({
+      maxDeepDepth: 100,
+      maxArrayDepth: 100,
+      suppressWarnings: false,
+      ignore: ['/'],
+    });
+    configuredEscapeTestSuite(validator, 'export default w/ configure');
+  }
+
+  {
+    // support old way
+    const validator = require(id).init();
+    validator.config({
+      maxDeepDepth: 100,
+      maxArrayDepth: 100,
+      suppressWarnings: false,
+      ignore: ['/'],
+    });
+    configuredEscapeTestSuite(validator, 'init() w/ configure');
+  }
 }
 
 class _IdExample {
