@@ -41,6 +41,29 @@ function main(id) {
     );
     escapeTestSuite(validator, 'init()');
   }
+
+  {
+    const validator = require('./validatorUtility');
+    escapeTestSuite(validator, 'export default');
+    validator.configure(
+      null, // max deep depth
+      null, // max array depth
+      null, // supress warrning about truncated object or unprocessed arrays
+      null, // values to NOT escape
+    );
+  }
+
+  {
+    // support old way
+    const validator = require('./validatorUtility').init();
+    validator.configure(
+      null, // max deep depth
+      null, // max array depth
+      null, // supress warrning about truncated object or unprocessed arrays
+      null, // values to NOT escape
+    );
+    escapeTestSuite(validator, 'init()');
+  }
 }
 class _IdExample {
   constructor(_id) {
