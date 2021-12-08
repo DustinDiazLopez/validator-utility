@@ -46,31 +46,60 @@ app.post('/ping', (req, res) => {
 });
 ```
 
-## JSDoc
+## Types
 
 ```ts
-/**
- * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object/array/string
- * @param {any} obj the object/string to sanitize. Required.
- * @param {number} maxDeepDepth maximum allowed recursion depth.
- *                                        `Infinity` by default.
- * @param {number} maxArrayDepth maximing allowed array size (depth).
- *                                         `Infinity` by default.
- * @param {boolean} supressWarnings wether to `console.warn` when an
- *                                            array/object exceeded the max depth.
- *                                            `false` by default.
- * @param {string[]|string} blacklist a list of characters to NOT escape.
- * @returns the sanitized object/string. If the input is not a string or an object
- *          it'll be returned. If a JSON-String is inputed it'll parse it and return it back
- *          as a JSON-String (with the appropriate values sanitized).
- */
-validator.escape(
-  obj,
-  maxDeepDepth?: number,
-  maxArrayDepth?: number,
-  supressWarnings?: boolean,
-  blacklist?: string[] | string,
-);
+declare module 'validator-utility' {
+  /**
+   * Replace `<`, `>`, `&`, `'`, `"` and `/` in every value inside an object/array/string
+   * @param {any} obj the object/string to sanitize. Required.
+   * @param {number} maxDeepDepth maximum allowed recursion depth.
+   *                                        `Infinity` by default.
+   * @param {number} maxArrayDepth maximing allowed array size (depth).
+   *                                         `Infinity` by default.
+   * @param {boolean} supressWarnings wether to `console.warn` when an
+   *                                            array/object exceeded the max depth.
+   *                                            `false` by default.
+   * @param {string[]|string} blacklist a list of characters to NOT escape.
+   * @returns the sanitized object/string. If the input is not a string or an object
+   *          it'll be returned. If a JSON-String is inputed it'll parse it and return it back
+   *          as a JSON-String (with the appropriate values sanitized).
+   */
+  export function escape<T>(
+    obj: T,
+    maxDeepDepth?: number,
+    maxArrayDepth?: number,
+    supressWarnings?: boolean,
+    blacklist?: string[] | string
+  ): T;
+  /**
+   * Configures the member vairables:
+   * @param {number} maxDeepDepth maximum allowed recursion depth.
+   *                                        `Infinity` by default.
+   * @param {number} maxArrayDepth maximing allowed array size (depth).
+   *                                         `Infinity` by default.
+   * @param {boolean} supressWarnings wether to `console.warn` when an
+   *                                            array/object exceeded the max depth.
+   *                                            `false` by default.
+   * @param {string[]|string} blacklist a list of characters to NOT escape.
+   */
+  export function configure(
+    maxDeepDepth?: number,
+    maxArrayDepth?: number,
+    supressWarnings?: boolean,
+    blacklist?: string[] | string
+  ): void;
+
+  export type ValidatoUtilityOptions = {
+    maxDeepDepth?: number,
+    maxArrayDepth?: number,
+    supressWarnings?: boolean,
+    blacklist?: string[] | string,
+  };
+
+  export function config(options: ValidatoUtilityOptions): void;
+}
+
 ```
 
 For documentation on other `validator` methods refer to the [validator](https://www.npmjs.com/package/validator)'s documentation.
